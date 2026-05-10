@@ -2,7 +2,10 @@
   <Folder Name="/demo/">
     <Project Path="demo/ExampleFunction/ExampleFunction.csproj" />
   </Folder>
-  <Folder Name="/src/" />
+  <Folder Name="/src/">
+    <Project Path="src/AzureFunctionsDotNetWorkerTestServer.Abstractions/AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj" />
+    <Project Path="src/AzureFunctionsDotNetWorkerTestServer/AzureFunctionsDotNetWorkerTestServer.csproj" />
+  </Folder>
   <Folder Name="/test/">
     <Project Path="test/AzureFunctionsDotNetWorkerTestServer.Tests/AzureFunctionsDotNetWorkerTestServer.Tests.csproj" />
   </Folder>

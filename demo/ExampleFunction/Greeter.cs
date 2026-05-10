@@ -5,6 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExampleFunction;
 
+public interface IDummyService
+{
+    string GetData();
+}
+public class DummyService : IDummyService
+{
+    public string GetData()
+    {
+        return "Hello from DummyService!";
+    }
+}
+
 public class Greeter
 {
     private readonly ILogger<Greeter> _logger;
