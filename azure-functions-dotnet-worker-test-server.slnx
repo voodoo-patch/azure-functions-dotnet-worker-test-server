@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/demo/">
+    <Project Path="demo/ExampleFunction/ExampleFunction.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/test/">
+    <Project Path="test/AzureFunctionsDotNetWorkerTestServer.Tests/AzureFunctionsDotNetWorkerTestServer.Tests.csproj" />
+  </Folder>
+</Solution>
