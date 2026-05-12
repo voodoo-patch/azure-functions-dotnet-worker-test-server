@@ -9,10 +9,7 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
     [Fact]
     public async Task Function_CanBeCalledAndUsesRegisteredServices()
     {
-        var client = factory.CreateDefaultClient(new TestClientHandler(factory.Services)
-        {
-            InnerHandler = new HttpClientHandler()
-        });
+        var client = factory.CreateFunctionsClient();
 
         var response = await client.GetAsync("/api/Greeter");
         response.EnsureSuccessStatusCode();
