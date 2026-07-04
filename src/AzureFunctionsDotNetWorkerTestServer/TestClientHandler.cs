@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Context.Features;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,9 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
 
         var functionContext = await BuildFunctionContextAsync(invocationId, request);
 
+        // Ensuring that the input binding feature is present in the function context features.
+        ArgumentNullException.ThrowIfNull(functionContext.Features.Get<IFunctionInputBindingFeature>());
+        
         // Drive the worker middleware pipeline concurrently — it will rendezvous with the
         // ASP.NET pipeline via DefaultHttpCoordinator once SetHttpContextAsync is called.
         var workerTask = WorkerInternals.InvokeFunctionAsync(provider, functionContext);
@@ -28,32 +32,32 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
         await workerTask;
         return response;
     }
-
+    
     private async Task<FunctionContext> BuildFunctionContextAsync(string invocationId, HttpRequestMessage request)
     {
         var metadataProvider = provider.GetRequiredService<IFunctionMetadataProvider>();
         var allMetadata = await metadataProvider.GetFunctionMetadataAsync("");
 
-        var matched = MatchFunction(allMetadata, request.RequestUri!)
+        var matched = MatchFunction(allMetadata, request)
             ?? throw new InvalidOperationException(
                 $"No HTTP trigger function matched path '{request.RequestUri!.AbsolutePath}'. " +
                 "Ensure the request URL matches a function's route or name.");
 
         var definition = new TestFunctionDefinition(matched);
 
-        var features = new TestInvocationFeatures();
-        features.Set((FunctionDefinition)definition);
-        features.Set((FunctionInvocation)new TestFunctionInvocation(invocationId, matched.FunctionId!));
+        var features = new TestInvocationFeatures(provider);
+        features.Set<FunctionDefinition>(definition);
+        features.Set<FunctionInvocation>(new TestFunctionInvocation(invocationId, matched.FunctionId!));
 
         var bindingsProxy = WorkerInternals.CreateBindingsFeatureProxy(provider, definition);
-        WorkerInternals.SetBindingsFeature(features, bindingsProxy);
-
+        WorkerInternals.SetBindingsFeature(features, WorkerInternals.FunctionBindingsFeatureType, bindingsProxy);
+        
         return WorkerInternals.CreateFunctionContext(provider, features);
     }
 
-    private static IFunctionMetadata? MatchFunction(IEnumerable<IFunctionMetadata> allMetadata, Uri requestUri)
+    private static IFunctionMetadata? MatchFunction(IEnumerable<IFunctionMetadata> allMetadata, HttpRequestMessage request)
     {
-        var path = requestUri.AbsolutePath;
+        var path = request.RequestUri!.AbsolutePath;
 
         foreach (var metadata in allMetadata)
         {
@@ -64,21 +68,44 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
                 using var doc = JsonDocument.Parse(raw);
                 var root = doc.RootElement;
 
-                if (!root.TryGetProperty("type", out var typeProp)) continue;
-                if (!typeProp.GetString()?.Equals("httpTrigger", StringComparison.OrdinalIgnoreCase) == true) continue;
+                if (!IsHttpTrigger(root)) continue;
 
-                string? route = null;
-                if (root.TryGetProperty("route", out var routeProp))
-                    route = routeProp.GetString();
-
-                if (string.IsNullOrEmpty(route))
-                    route = metadata.Name;
-
-                if (path.StartsWith($"/api/{route}", StringComparison.OrdinalIgnoreCase))
+                if (IsRouteMatching(root, metadata) && IsMethodMatching(root))
                     return metadata;
             }
         }
 
         return null;
+
+        bool IsHttpTrigger(JsonElement root)
+        {
+            if (!root.TryGetProperty("type", out var typeProp)) return false;
+
+            return typeProp.GetString()?.Equals("httpTrigger", StringComparison.OrdinalIgnoreCase) ?? false;
+        }
+
+        bool IsRouteMatching(JsonElement root, IFunctionMetadata metadata)
+        {
+            string? route = null;
+            if (root.TryGetProperty("route", out var routeProp))
+                route = routeProp.GetString();
+
+            // If the route is not specified, the function name is used as the default route.
+            if (string.IsNullOrEmpty(route))
+                route = metadata.Name;
+
+            return path.Equals($"/api/{route}", StringComparison.OrdinalIgnoreCase);
+        }
+        
+        bool IsMethodMatching(JsonElement root)
+        {
+            if (!root.TryGetProperty("methods", out var methodsProp)) return true;
+
+            if (methodsProp.ValueKind != JsonValueKind.Array) return true;
+            
+            return methodsProp.EnumerateArray()
+                .Select(m => m.GetString())
+                .Contains(request.Method.Method, StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

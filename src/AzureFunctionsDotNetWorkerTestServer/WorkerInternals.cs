@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,10 @@ internal static class WorkerInternals
     public static readonly Type FunctionContextFactoryType;
     public static readonly Type FunctionsApplicationType;
     public static readonly Type FunctionBindingsFeatureType;
+    public static readonly Type InvocationFeatureProviderType;
     public static readonly Type OutputBindingsInfoProviderType;
+
+    private static readonly Assembly WorkerAssembly = typeof(FunctionContext).Assembly;
 
     // Cached MethodInfo objects — resolved once to avoid per-invocation reflection overhead.
     private static readonly MethodInfo CreateContextMethod;
@@ -23,31 +27,40 @@ internal static class WorkerInternals
     private static readonly MethodInfo GetBindingsInfoMethod;
     private static readonly MethodInfo SetFeaturesMethod;
     private static readonly MethodInfo DispatchProxyCreateMethod;
+    private static readonly MethodInfo TryCreateMethod;
+
 
     static WorkerInternals()
     {
-        var workerAssembly = typeof(FunctionContext).Assembly;
-
         FunctionContextFactoryType = Require(
-            workerAssembly.GetType("Microsoft.Azure.Functions.Worker.Pipeline.IFunctionContextFactory"),
+            WorkerAssembly.GetType("Microsoft.Azure.Functions.Worker.Pipeline.IFunctionContextFactory"),
             "IFunctionContextFactory");
 
         FunctionsApplicationType = Require(
-            workerAssembly.GetType("Microsoft.Azure.Functions.Worker.IFunctionsApplication"),
+            WorkerAssembly.GetType("Microsoft.Azure.Functions.Worker.IFunctionsApplication"),
             "IFunctionsApplication");
 
         FunctionBindingsFeatureType = Require(
-            workerAssembly.GetType("Microsoft.Azure.Functions.Worker.Context.Features.IFunctionBindingsFeature"),
+            WorkerAssembly.GetType("Microsoft.Azure.Functions.Worker.Context.Features.IFunctionBindingsFeature"),
             "IFunctionBindingsFeature");
 
         OutputBindingsInfoProviderType = Require(
-            workerAssembly.GetType("Microsoft.Azure.Functions.Worker.OutputBindings.IOutputBindingsInfoProvider"),
+            WorkerAssembly.GetType("Microsoft.Azure.Functions.Worker.OutputBindings.IOutputBindingsInfoProvider"),
             "IOutputBindingsInfoProvider");
 
+        InvocationFeatureProviderType = Require(
+            WorkerAssembly.GetType("Microsoft.Azure.Functions.Worker.IInvocationFeatureProvider"),
+            "IInvocationFeatureProvider");
+
         CreateContextMethod = Require(FunctionContextFactoryType.GetMethod("Create"), "IFunctionContextFactory.Create");
-        InvokeFunctionAsyncMethod = Require(FunctionsApplicationType.GetMethod("InvokeFunctionAsync"), "IFunctionsApplication.InvokeFunctionAsync");
-        GetBindingsInfoMethod = Require(OutputBindingsInfoProviderType.GetMethod("GetBindingsInfo"), "IOutputBindingsInfoProvider.GetBindingsInfo");
-        SetFeaturesMethod = Require(typeof(IInvocationFeatures).GetMethod(nameof(IInvocationFeatures.Set)), "IInvocationFeatures.Set");
+        InvokeFunctionAsyncMethod = Require(FunctionsApplicationType.GetMethod("InvokeFunctionAsync"),
+            "IFunctionsApplication.InvokeFunctionAsync");
+        GetBindingsInfoMethod = Require(OutputBindingsInfoProviderType.GetMethod("GetBindingsInfo"),
+            "IOutputBindingsInfoProvider.GetBindingsInfo");
+        SetFeaturesMethod = Require(typeof(IInvocationFeatures).GetMethod(nameof(IInvocationFeatures.Set)),
+            "IInvocationFeatures.Set");
+        TryCreateMethod = Require(InvocationFeatureProviderType.GetMethod("TryCreate"),
+            "IInvocationFeatureProvider.TryCreate");
 
         // Use explicit lookup to avoid AmbiguousMatchException — DispatchProxy has both generic and non-generic overloads.
         DispatchProxyCreateMethod = typeof(DispatchProxy)
@@ -88,11 +101,75 @@ internal static class WorkerInternals
     }
 
     /// <summary>Sets the bindings feature on the invocation features dictionary using the runtime type as the generic key.</summary>
-    public static void SetBindingsFeature(IInvocationFeatures features, object proxy)
+    public static void SetBindingsFeature(IInvocationFeatures features, Type type, object proxy)
     {
         SetFeaturesMethod
-            .MakeGenericMethod(FunctionBindingsFeatureType)
+            .MakeGenericMethod(type)
             .Invoke(features, [proxy]);
+    }
+
+    public static bool TryCreateFeatureViaProvider<T>(IServiceProvider serviceProvider,
+        [NotNullWhen(true)] out T? feature)
+    {
+        var featureType = typeof(T);
+        var providerType = WorkerAssembly.GetType($"{featureType.Namespace}.{featureType.Name}Provider");
+        if (providerType is null)
+        {
+            feature = default!;
+            return false;
+        }
+
+        // 1. Resolve internal  IInputConversionFeatureProvider  from DI.
+        var featureProvider = serviceProvider.GetService(providerType);
+        if (featureProvider is null)
+        {
+            feature = default!;
+            return false;
+        }
+
+        var method = Require(providerType.GetMethod("TryCreate"), $"{providerType.FullName}.TryCreate");
+
+        // 2. Discover candidate concrete types assignable to  IInputConversionFeature  in the worker assembly.
+        var candidateTypes = WorkerAssembly.GetTypes()
+            .Where(t => featureType.IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
+            .Concat([featureType])
+            .ToList();
+        // 3. Call  TryCreate(candidateType, out feature)  for each candidate until one returns  true .
+        foreach (var candidate in candidateTypes)
+        {
+            var parameters = new object?[] { candidate, null };
+            var success = (bool)method.Invoke(featureProvider, parameters)!;
+            if (success && parameters[1] is T)
+            {
+                feature = (T)parameters[1]!;
+                return true;
+            }
+        }
+
+        feature = default!;
+        return false;
+    }
+
+    public static bool TryCreateFeatureViaInvocationProvider<T>(IServiceProvider serviceProvider,
+        [NotNullWhen(true)] out T? feature)
+    {
+        var featureType = typeof(T);
+        var invocationFeatureProviders = serviceProvider.GetServices(InvocationFeatureProviderType);
+
+        foreach (var invocationFeatureProvider in invocationFeatureProviders)
+        {
+            var parameters = new object?[] { featureType, null };
+            var success = (bool)TryCreateMethod.Invoke(invocationFeatureProvider, parameters)!;
+
+            if (success && parameters[1] is T createdFeature)
+            {
+                feature = createdFeature;
+                return true;
+            }
+        }
+
+        feature = default!;
+        return false;
     }
 
     private static T Require<T>(T? value, string name) where T : class =>
