@@ -1,4 +1,8 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Context.Features;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
@@ -55,9 +59,15 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
         return WorkerInternals.CreateFunctionContext(provider, features);
     }
 
+    /// <summary>
+    /// Caches parsed route templates keyed by the Functions route pattern (e.g. "api/items/{id}"),
+    /// avoiding re-parsing the template on every incoming request.
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, TemplateMatcher> RouteMatcherCache = new();
+
     private static IFunctionMetadata? MatchFunction(IEnumerable<IFunctionMetadata> allMetadata, HttpRequestMessage request)
     {
-        var path = request.RequestUri!.AbsolutePath;
+        PathString path = request.RequestUri!.AbsolutePath;
 
         foreach (var metadata in allMetadata)
         {
@@ -70,7 +80,7 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
 
                 if (!IsHttpTrigger(root)) continue;
 
-                if (IsRouteMatching(root, metadata) && IsMethodMatching(root))
+                if (IsMethodMatching(root) && IsRouteMatching(root, metadata))
                     return metadata;
             }
         }
@@ -94,7 +104,13 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
             if (string.IsNullOrEmpty(route))
                 route = metadata.Name;
 
-            return path.Equals($"/api/{route}", StringComparison.OrdinalIgnoreCase);
+            // Use ASP.NET Core's own route template matcher so parameterized segments
+            // (e.g. "items/{id}") are supported, not just exact/prefix string comparisons.
+            var matcher = RouteMatcherCache.GetOrAdd($"api/{route}",
+                pattern => new TemplateMatcher(TemplateParser.Parse(pattern), new RouteValueDictionary()));
+
+            var routeValues = new RouteValueDictionary();
+            return matcher.TryMatch(path, routeValues);
         }
         
         bool IsMethodMatching(JsonElement root)

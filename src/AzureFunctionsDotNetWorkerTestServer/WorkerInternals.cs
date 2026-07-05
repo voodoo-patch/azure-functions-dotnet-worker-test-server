@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Azure.Functions.Worker;
@@ -108,46 +109,96 @@ internal static class WorkerInternals
             .Invoke(features, [proxy]);
     }
 
+    /// <summary>
+    /// Caches, per feature type, the provider interface, its <c>TryCreate</c> method, and the
+    /// concrete feature type that were discovered to successfully create the feature — avoids
+    /// repeating the assembly-wide scan in <see cref="TryCreateFeatureViaProvider{T}"/> on every call.
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, (Type ProviderType, MethodInfo TryCreate, Type ConcreteType)> ResolvedProviders = new();
+
+    /// <summary>
+    /// Creates a feature by structurally discovering a "TryCreate(Type, out TFeature)"-shaped
+    /// provider interface in the worker assembly (e.g. <c>IInputConversionFeatureProvider</c>),
+    /// rather than assuming a "{FeatureName}Provider" naming convention. This mirrors how the
+    /// worker itself locates specialized providers beyond the generic <c>IInvocationFeatureProvider</c>.
+    /// </summary>
     public static bool TryCreateFeatureViaProvider<T>(IServiceProvider serviceProvider,
         [NotNullWhen(true)] out T? feature)
     {
         var featureType = typeof(T);
-        var providerType = WorkerAssembly.GetType($"{featureType.Namespace}.{featureType.Name}Provider");
-        if (providerType is null)
+
+        // Fast path: reuse the provider/method/concrete-type combination discovered previously.
+        if (ResolvedProviders.TryGetValue(featureType, out var cached) &&
+            serviceProvider.GetService(cached.ProviderType) is { } cachedProvider &&
+            TryInvoke(cachedProvider, cached.TryCreate, cached.ConcreteType, out feature))
         {
-            feature = default!;
-            return false;
+            return true;
         }
 
-        // 1. Resolve internal IInputConversionFeatureProvider from DI.
-        var featureProvider = serviceProvider.GetService(providerType);
-        if (featureProvider is null)
-        {
-            feature = default!;
-            return false;
-        }
-
-        var method = Require(providerType.GetMethod("TryCreate"), $"{providerType.FullName}.TryCreate");
-
-        // 2. Discover candidate concrete types assignable to IInputConversionFeature in the worker assembly.
+        // Discover candidate concrete types assignable to the requested feature type.
         var candidateTypes = WorkerAssembly.GetTypes()
             .Where(t => featureType.IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
             .Concat([featureType])
             .ToList();
-        // 3. Call TryCreate(candidateType, out feature) for each candidate until one returns true.
-        foreach (var candidate in candidateTypes)
+
+        // Discover candidate provider interfaces exposing bool TryCreate(Type, out TFeature).
+        var providerTypes = WorkerAssembly.GetTypes()
+            .Where(t => t.IsInterface && GetMatchingTryCreate(t, featureType) is not null);
+
+        foreach (var providerType in providerTypes)
         {
-            var parameters = new object?[] { candidate, null };
-            var success = (bool)method.Invoke(featureProvider, parameters)!;
-            if (success && parameters[1] is T)
+            var tryCreateMethod = GetMatchingTryCreate(providerType, featureType)!;
+
+            if (serviceProvider.GetService(providerType) is not { } providerInstance) continue;
+
+            foreach (var candidate in candidateTypes)
             {
-                feature = (T)parameters[1]!;
+                if (!TryInvoke(providerInstance, tryCreateMethod, candidate, out feature)) continue;
+
+                ResolvedProviders[featureType] = (providerType, tryCreateMethod, candidate);
                 return true;
             }
         }
 
         feature = default!;
         return false;
+
+        static bool TryInvoke(object providerInstance, MethodInfo tryCreateMethod, Type candidate,
+            [NotNullWhen(true)] out T? created)
+        {
+            var parameters = new object?[] { candidate, null };
+            var success = (bool)tryCreateMethod.Invoke(providerInstance, parameters)!;
+
+            if (success && parameters[1] is T result)
+            {
+                created = result;
+                return true;
+            }
+
+            created = default!;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Returns the provider's <c>TryCreate</c> method if it is shaped like
+    /// <c>bool TryCreate(Type type, out TFeature feature)</c> where TFeature exactly matches
+    /// <paramref name="featureType"/>, or <see langword="null"/> otherwise. The <c>object</c>-typed
+    /// <c>IInvocationFeatureProvider</c> is intentionally excluded by the exact-match check —
+    /// that generic provider is handled by <see cref="TryCreateFeatureViaInvocationProvider{T}"/>.
+    /// </summary>
+    private static MethodInfo? GetMatchingTryCreate(Type providerType, Type featureType)
+    {
+        var method = providerType.GetMethod("TryCreate");
+        if (method is null) return null;
+
+        var parameters = method.GetParameters();
+        if (parameters.Length != 2) return null;
+        if (parameters[0].ParameterType != typeof(Type)) return null;
+        if (!parameters[1].ParameterType.IsByRef) return null;
+
+        var outType = parameters[1].ParameterType.GetElementType();
+        return outType == featureType ? method : null;
     }
 
     public static bool TryCreateFeatureViaInvocationProvider<T>(IServiceProvider serviceProvider,

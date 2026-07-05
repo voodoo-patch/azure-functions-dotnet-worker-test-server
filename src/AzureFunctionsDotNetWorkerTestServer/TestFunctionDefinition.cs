@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Converters;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
+using Microsoft.Azure.Functions.Worker.Extensions.Abstractions;
 
 namespace AzureFunctionsDotNetWorkerTestServer;
 
@@ -15,6 +16,11 @@ namespace AzureFunctionsDotNetWorkerTestServer;
 /// </summary>
 internal sealed class TestFunctionDefinition : FunctionDefinition
 {
+    private const string ConverterTypeKey = "converterType";
+    private const string BindingAttributeKey = "bindingAttribute";
+    private const string ConverterFallbackBehaviorKey = "converterFallbackBehavior";
+    private const string BindingAttributeSupportedConvertersKey = "bindingAttributeSupportedConverters";
+
     public override string Id { get; }
     public override string Name { get; }
     public override string PathToAssembly { get; }
@@ -86,17 +92,63 @@ internal sealed class TestFunctionDefinition : FunctionDefinition
     {
         var properties = new Dictionary<string, object>();
 
-        // Add custom attributes as properties
-        foreach (var attr in parameter.GetCustomAttributes())
+        var inputConverterAttribute = parameter.GetCustomAttribute<InputConverterAttribute>();
+        if (inputConverterAttribute is not null)
         {
-            // if InputConverterAttribute is present, then add the <see cref="PropertyBagKeys.ConverterType"> property to the dictionary
-            if (attr is InputConverterAttribute inputConverterAttr)
-            {
-                properties["converterType"] = inputConverterAttr.ConverterType.AssemblyQualifiedName!;
-            }
+            properties[ConverterTypeKey] = inputConverterAttribute.ConverterType.AssemblyQualifiedName!;
+            return properties.ToImmutableDictionary();
+        }
+
+        BindingAttribute? bindingAttribute = parameter.GetCustomAttribute<InputBindingAttribute>();
+        bindingAttribute ??= parameter.GetCustomAttribute<TriggerBindingAttribute>();
+
+        if (bindingAttribute is null)
+            return properties.ToImmutableDictionary();
+
+        properties[BindingAttributeKey] = bindingAttribute;
+
+        var converterTypesByConverter = new Dictionary<Type, List<Type>>();
+        var bindingAttributes = bindingAttribute.GetType().GetCustomAttributes<InputConverterAttribute>();
+        var hasAdvertisedInputConverters = false;
+
+        foreach (var converterAttribute in bindingAttributes)
+        {
+            hasAdvertisedInputConverters = true;
+            converterTypesByConverter[converterAttribute.ConverterType] = GetSupportedTargetTypes(converterAttribute.ConverterType);
+        }
+
+        properties[BindingAttributeSupportedConvertersKey] = converterTypesByConverter;
+
+        if (hasAdvertisedInputConverters)
+        {
+            var fallback = bindingAttribute.GetType().GetCustomAttribute<ConverterFallbackBehaviorAttribute>()?.Behavior
+                           ?? ConverterFallbackBehavior.Default;
+            properties[ConverterFallbackBehaviorKey] = fallback;
         }
 
         return properties.ToImmutableDictionary();
+    }
+
+    private static List<Type> GetSupportedTargetTypes(Type converterType)
+    {
+        var supportedTargetTypes = new List<Type>();
+
+        foreach (var converterAttribute in converterType.CustomAttributes)
+        {
+            if (converterAttribute.AttributeType != typeof(SupportedTargetTypeAttribute))
+                continue;
+
+            foreach (var constructorArg in converterAttribute.ConstructorArguments)
+            {
+                if (constructorArg is { ArgumentType: not null, Value: Type type } &&
+                    constructorArg.ArgumentType == typeof(Type))
+                {
+                    supportedTargetTypes.Add(type);
+                }
+            }
+        }
+
+        return supportedTargetTypes;
     }
 
     private static bool TryGetEndpointMethodInfo(IFunctionMetadata metadata, [NotNullWhen(true)] out MethodInfo? method)
