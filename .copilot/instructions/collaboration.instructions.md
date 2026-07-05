@@ -70,6 +70,42 @@ The build follows the plan in `plan-azureFunctionsDotnetWorkerTestServer.prompt.
 
 ---
 
+## Implementation Journal (`docs/journal/`)
+
+This repository keeps a running journal of the challenges hit while building the plan, and the
+reasoning behind each solution — see `docs/journal/README.md` for its purpose and the existing
+entries (`01-…` through `04-…`). Treat the journal as a living artifact, not a one-time record.
+
+### When to update it
+
+- **At the end of every phase** (per the Plan Phases table above), add or update a journal entry
+  before considering that phase done — even if the developer doesn't explicitly ask for it.
+- Also add an entry (or append to the current phase's entry) whenever a **non-trivial debugging
+  trail** happens mid-phase — e.g. a reflection/internal-type mismatch, a "value comes back null"
+  chase, or a design decision that reversed an earlier assumption. Don't wait for phase-end if the
+  trail is substantial and might otherwise be forgotten.
+- If a phase spans multiple sessions, update the same entry incrementally rather than deferring
+  everything to the end.
+
+### How to write an entry
+
+- File naming: `docs/journal/NN-kebab-case-title.md`, numbered in build order following the last
+  existing entry (currently `04-…`).
+- Follow the structure already established in entries 01–04: a short **Goal** line, a **Commits**
+  line (referencing the actual commit hashes/messages for that phase's work once they exist),
+  then a chronological, step-by-step trail of what was tried, what failed, what the actual root
+  cause was, and why the fix works — not just the final answer.
+- Capture *why*, not just *what*: the code and README already describe the finished shape: this
+  journal exists to preserve the reasoning, dead ends, and trade-offs so they aren't re-discovered
+  later.
+- After adding a new entry, update the **Entries, in build order** list and, if relevant, the
+  **Architecture cheat sheet** table in `docs/journal/README.md`.
+- Since Copilot acts as reviewer/guide (not implementer) per this file's core principle, drafting
+  or updating the journal entry is one thing Copilot *can* do directly when asked — it documents
+  the developer's own work rather than writing the implementation for them.
+
+---
+
 ## Code Quality Signals to Watch For
 
 - **Reflection boundaries**: All internal worker type access should stay inside `WorkerInternals.cs`. Do not scatter reflection calls across files.

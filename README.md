@@ -171,3 +171,13 @@ For scenarios outside this scope, use the Azure Functions Core Tools or a hosted
 | 3 | HTTP invocation harness | 🚧 In Progress |
 | 4 | Middleware/filter coverage suite | ⬜ Planned |
 | 5 | Reliability and CI hardening | ⬜ Planned |
+
+---
+
+## Implementation Journal
+
+The [`docs/journal/`](docs/journal/README.md) folder tracks the challenges hit while building this
+library and the reasoning behind each solution — a narrative companion to the code, useful when
+revisiting internals, diagnosing a similar "internal type not resolving" issue, or planning a
+refactor. It also includes an architecture cheat sheet of the internal worker types this library
+depends on via reflection.
