@@ -28,7 +28,7 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Equal("Welcome to Azure Functions, TestUser", content);
+        Assert.Equal("Welcome to Azure Functions, TestUser!", content);
     }
     
     [Fact]

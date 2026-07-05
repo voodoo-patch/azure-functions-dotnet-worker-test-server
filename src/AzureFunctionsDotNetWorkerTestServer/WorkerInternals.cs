@@ -119,7 +119,7 @@ internal static class WorkerInternals
             return false;
         }
 
-        // 1. Resolve internal  IInputConversionFeatureProvider  from DI.
+        // 1. Resolve internal IInputConversionFeatureProvider from DI.
         var featureProvider = serviceProvider.GetService(providerType);
         if (featureProvider is null)
         {
@@ -129,12 +129,12 @@ internal static class WorkerInternals
 
         var method = Require(providerType.GetMethod("TryCreate"), $"{providerType.FullName}.TryCreate");
 
-        // 2. Discover candidate concrete types assignable to  IInputConversionFeature  in the worker assembly.
+        // 2. Discover candidate concrete types assignable to IInputConversionFeature in the worker assembly.
         var candidateTypes = WorkerAssembly.GetTypes()
             .Where(t => featureType.IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
             .Concat([featureType])
             .ToList();
-        // 3. Call  TryCreate(candidateType, out feature)  for each candidate until one returns  true .
+        // 3. Call TryCreate(candidateType, out feature) for each candidate until one returns true.
         foreach (var candidate in candidateTypes)
         {
             var parameters = new object?[] { candidate, null };

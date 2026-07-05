@@ -2,6 +2,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FromBodyAttribute = Microsoft.Azure.Functions.Worker.Http.FromBodyAttribute;
 
 namespace ExampleFunction;
 
@@ -18,19 +19,12 @@ public class DummyService : IDummyService
     }
 }
 
-public class Greeter
+public class Greeter(ILogger<Greeter> logger, IDummyService dummyService)
 {
-    private readonly ILogger<Greeter> _logger;
-
-    public Greeter(ILogger<Greeter> logger)
-    {
-        _logger = logger;
-    }
-
     [Function("Greeter")]
     public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter")] HttpRequest req)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        logger.LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult("Welcome to Azure Functions!");
     }
 
@@ -38,17 +32,15 @@ public class Greeter
     public IActionResult RunWithInput([HttpTrigger(AuthorizationLevel.Function, "post", Route = "greeter")] HttpRequest req,
         [FromBody] GreeterInput input)
     {
-        var method = req.Method;
-        _logger.LogInformation("C# HTTP trigger function processed a request with input.");
+        logger.LogInformation("C# HTTP trigger function processed a request with input.");
         return new OkObjectResult($"Welcome to Azure Functions, {input.Name}!");
     }
     
     [Function("GreeterWithService")]
     public IActionResult RunWithService(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithService")] HttpRequest req,
-        [FromServices] IDummyService dummyService)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithService")] HttpRequest req)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        logger.LogInformation("C# HTTP trigger function processed a request.");
         var data = dummyService.GetData();
         return new OkObjectResult($"Welcome to Azure Functions! Data: {data}");
     }

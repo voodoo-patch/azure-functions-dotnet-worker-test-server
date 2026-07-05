@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Converters;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 
 namespace AzureFunctionsDotNetWorkerTestServer;
@@ -61,8 +64,48 @@ internal sealed class TestFunctionDefinition : FunctionDefinition
 
     private static ImmutableArray<FunctionParameter> BuildParameters(IFunctionMetadata metadata)
     {
-        if (metadata.EntryPoint is null || metadata.ScriptFile is null)
+        if (!TryGetEndpointMethodInfo(metadata, out var method))
+        {
             return ImmutableArray<FunctionParameter>.Empty;
+        }
+
+        return
+        [
+            ..method.GetParameters()
+                .Where(p => p.Name is not null)
+                .Select(p => new FunctionParameter(
+                    p.Name!,
+                    p.ParameterType,
+                    p.HasDefaultValue,
+                    p.DefaultValue,
+                    BuildParameterProperties(p)))
+        ];
+    }
+
+    private static IReadOnlyDictionary<string, object> BuildParameterProperties(ParameterInfo parameter)
+    {
+        var properties = new Dictionary<string, object>();
+
+        // Add custom attributes as properties
+        foreach (var attr in parameter.GetCustomAttributes())
+        {
+            // if InputConverterAttribute is present, then add the <see cref="PropertyBagKeys.ConverterType"> property to the dictionary
+            if (attr is InputConverterAttribute inputConverterAttr)
+            {
+                properties["converterType"] = inputConverterAttr.ConverterType.AssemblyQualifiedName!;
+            }
+        }
+
+        return properties.ToImmutableDictionary();
+    }
+
+    private static bool TryGetEndpointMethodInfo(IFunctionMetadata metadata, [NotNullWhen(true)] out MethodInfo? method)
+    {
+        if (metadata.EntryPoint is null || metadata.ScriptFile is null)
+        {
+            method = null;
+            return false;
+        }
 
         // EntryPoint format: "Namespace.ClassName.MethodName"
         var lastDot = metadata.EntryPoint.LastIndexOf('.');
@@ -73,20 +116,14 @@ internal sealed class TestFunctionDefinition : FunctionDefinition
         var assembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == assemblyName);
 
-        if (assembly is null) return ImmutableArray<FunctionParameter>.Empty;
+        if (assembly is null)
+        {
+            method = null;
+            return false;
+        }
 
-        var method = assembly.GetType(typeName)?.GetMethod(methodName);
-        if (method is null) return ImmutableArray<FunctionParameter>.Empty;
+        method = assembly.GetType(typeName)?.GetMethod(methodName);
 
-        return [
-            ..method.GetParameters()
-                .Where(p => p.Name is not null)
-                .Select(p => new FunctionParameter(
-                    p.Name!,
-                    p.ParameterType,
-                    p.HasDefaultValue,
-                    p.DefaultValue,
-                    ImmutableDictionary<string, object>.Empty))
-        ];
+        return method is not null;
     }
 }
