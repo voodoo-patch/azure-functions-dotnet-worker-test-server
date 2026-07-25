@@ -10,7 +10,7 @@ namespace AzureFunctionsDotNetWorkerTestServer;
 
 public class FunctionAppFactory<TProgram>
     : WebApplicationFactory<TProgram>
-    where TProgram : class, IFunctionAppServices
+    where TProgram : class, IFunctionAppStartup
 {
     private readonly Action<IServiceCollection>? _serviceOverrides;
 
@@ -34,7 +34,7 @@ public class FunctionAppFactory<TProgram>
 
     protected override IHostBuilder CreateHostBuilder() =>
         Host.CreateDefaultBuilder(["--Functions:Worker:HostEndpoint=http://localhost:0/"])
-            .ConfigureFunctionsWebApplication();
+            .ConfigureFunctionsWebApplication(TProgram.ConfigureWorker);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
