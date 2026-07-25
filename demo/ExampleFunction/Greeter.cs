@@ -2,6 +2,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using FromBodyAttribute = Microsoft.Azure.Functions.Worker.Http.FromBodyAttribute;
 
 namespace ExampleFunction;
@@ -19,29 +20,52 @@ public class DummyService : IDummyService
     }
 }
 
-public class Greeter(ILogger<Greeter> logger, IDummyService dummyService)
+public class Greeter
 {
     [Function("Greeter")]
-    public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter")] HttpRequest req)
+    public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter")] HttpRequest req,
+        FunctionContext executionContext)
     {
-        logger.LogInformation("C# HTTP trigger function processed a request.");
+        executionContext
+            .GetLogger<ILogger<Greeter>>()
+            .LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult("Welcome to Azure Functions!");
     }
 
-    [Function("GreeterWithInput")]
-    public IActionResult RunWithInput([HttpTrigger(AuthorizationLevel.Function, "post", Route = "greeter")] HttpRequest req,
-        [FromBody] GreeterInput input)
+    [Function("GreeterById")]
+    public IActionResult RunById(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter/{id:int}")] HttpRequest req, int id,
+        FunctionContext executionContext)
     {
-        logger.LogInformation("C# HTTP trigger function processed a request with input.");
+        executionContext
+            .GetLogger<ILogger<Greeter>>()
+            .LogInformation("C# HTTP trigger function processed a request.");
+        return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
+    }
+
+    [Function("GreeterWithInput")]
+    public IActionResult RunWithInput(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "greeter")] HttpRequest req,
+        [FromBody] GreeterInput input, FunctionContext executionContext)
+    {
+        executionContext
+            .GetLogger<ILogger<Greeter>>()
+            .LogInformation("C# HTTP trigger function processed a request with input.");
         return new OkObjectResult($"Welcome to Azure Functions, {input.Name}!");
     }
-    
+
     [Function("GreeterWithService")]
     public IActionResult RunWithService(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithService")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithService")]
+        HttpRequest req, FunctionContext executionContext)
     {
-        logger.LogInformation("C# HTTP trigger function processed a request.");
-        var data = dummyService.GetData();
+        executionContext
+            .GetLogger<ILogger<Greeter>>()
+            .LogInformation("C# HTTP trigger function processed a request.");
+
+        var data = executionContext.InstanceServices
+            .GetRequiredService<IDummyService>()
+            .GetData();
         return new OkObjectResult($"Welcome to Azure Functions! Data: {data}");
     }
 

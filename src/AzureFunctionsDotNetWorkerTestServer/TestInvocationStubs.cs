@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 
 namespace AzureFunctionsDotNetWorkerTestServer;
@@ -38,12 +39,13 @@ internal class TestFunctionBindingsFeatureProxy : DispatchProxy
     private object? _invocationResult;
 
     public object? CachedOutputBindingsInfo { get; set; }
+    public RouteValueDictionary RouteValues { get; set; } = new();
 
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) =>
         targetMethod?.Name switch
         {
             "get_TriggerMetadata"    => ImmutableDictionary<string, object?>.Empty,
-            "get_InputData"          => ImmutableDictionary<string, object?>.Empty,
+            "get_InputData"          => RouteValues.ToImmutableDictionary(),
             "get_OutputBindingData"  => _outputData,
             "get_OutputBindingsInfo" => CachedOutputBindingsInfo,
             "get_InvocationResult"   => _invocationResult,

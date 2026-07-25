@@ -42,7 +42,7 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
         var metadataProvider = provider.GetRequiredService<IFunctionMetadataProvider>();
         var allMetadata = await metadataProvider.GetFunctionMetadataAsync("");
 
-        var matched = MatchFunction(allMetadata, request)
+        var matched = MatchFunction(allMetadata, request, out var routeValues)
             ?? throw new InvalidOperationException(
                 $"No HTTP trigger function matched path '{request.RequestUri!.AbsolutePath}'. " +
                 "Ensure the request URL matches a function's route or name.");
@@ -53,7 +53,7 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
         features.Set<FunctionDefinition>(definition);
         features.Set<FunctionInvocation>(new TestFunctionInvocation(invocationId, matched.FunctionId!));
 
-        var bindingsProxy = WorkerInternals.CreateBindingsFeatureProxy(provider, definition);
+        var bindingsProxy = WorkerInternals.CreateBindingsFeatureProxy(provider, definition, routeValues);
         WorkerInternals.SetBindingsFeature(features, WorkerInternals.FunctionBindingsFeatureType, bindingsProxy);
         
         return WorkerInternals.CreateFunctionContext(provider, features);
@@ -65,8 +65,11 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
     /// </summary>
     private static readonly ConcurrentDictionary<string, TemplateMatcher> RouteMatcherCache = new();
 
-    private static IFunctionMetadata? MatchFunction(IEnumerable<IFunctionMetadata> allMetadata, HttpRequestMessage request)
+    private static IFunctionMetadata? MatchFunction(IEnumerable<IFunctionMetadata> allMetadata, 
+        HttpRequestMessage request,
+        out RouteValueDictionary routeValues)
     {
+        routeValues = new RouteValueDictionary();
         PathString path = request.RequestUri!.AbsolutePath;
 
         foreach (var metadata in allMetadata)
@@ -80,7 +83,7 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
 
                 if (!IsHttpTrigger(root)) continue;
 
-                if (IsMethodMatching(root) && IsRouteMatching(root, metadata))
+                if (IsMethodMatching(root) && IsRouteMatching(root, metadata, out routeValues))
                     return metadata;
             }
         }
@@ -94,8 +97,9 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
             return typeProp.GetString()?.Equals("httpTrigger", StringComparison.OrdinalIgnoreCase) ?? false;
         }
 
-        bool IsRouteMatching(JsonElement root, IFunctionMetadata metadata)
+        bool IsRouteMatching(JsonElement root, IFunctionMetadata metadata, out RouteValueDictionary routeValues)
         {
+            routeValues = new RouteValueDictionary();
             string? route = null;
             if (root.TryGetProperty("route", out var routeProp))
                 route = routeProp.GetString();
@@ -109,7 +113,6 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
             var matcher = RouteMatcherCache.GetOrAdd($"api/{route}",
                 pattern => new TemplateMatcher(TemplateParser.Parse(pattern), new RouteValueDictionary()));
 
-            var routeValues = new RouteValueDictionary();
             return matcher.TryMatch(path, routeValues);
         }
         

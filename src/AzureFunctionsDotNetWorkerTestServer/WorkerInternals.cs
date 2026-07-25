@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -88,7 +89,8 @@ internal static class WorkerInternals
     /// <c>IFunctionBindingsFeature</c> interface, pre-populated with the correct
     /// <c>OutputBindingsInfo</c> resolved from DI for the given function definition.
     /// </summary>
-    public static object CreateBindingsFeatureProxy(IServiceProvider provider, FunctionDefinition definition)
+    public static object CreateBindingsFeatureProxy(IServiceProvider provider, FunctionDefinition definition,
+        RouteValueDictionary routeValues)
     {
         var infoProvider = provider.GetRequiredService(OutputBindingsInfoProviderType);
         var outputBindingsInfo = GetBindingsInfoMethod.Invoke(infoProvider, [definition]);
@@ -98,6 +100,8 @@ internal static class WorkerInternals
             .Invoke(null, null)!;
 
         ((TestFunctionBindingsFeatureProxy)proxy).CachedOutputBindingsInfo = outputBindingsInfo;
+        ((TestFunctionBindingsFeatureProxy)proxy).RouteValues = routeValues;
+        
         return proxy;
     }
 
@@ -114,7 +118,8 @@ internal static class WorkerInternals
     /// concrete feature type that were discovered to successfully create the feature — avoids
     /// repeating the assembly-wide scan in <see cref="TryCreateFeatureViaProvider{T}"/> on every call.
     /// </summary>
-    private static readonly ConcurrentDictionary<Type, (Type ProviderType, MethodInfo TryCreate, Type ConcreteType)> ResolvedProviders = new();
+    private static readonly ConcurrentDictionary<Type, (Type ProviderType, MethodInfo TryCreate, Type ConcreteType)>
+        ResolvedProviders = new();
 
     /// <summary>
     /// Creates a feature by structurally discovering a "TryCreate(Type, out TFeature)"-shaped

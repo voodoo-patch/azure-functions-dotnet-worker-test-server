@@ -12,7 +12,7 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.GetAsync("/api/Greeter");
+        var response = await client.GetAsync("/api/greeter");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -20,11 +20,24 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
     }
     
     [Fact]
+    public async Task Function_CanGetById()
+    {
+        var client = factory.CreateFunctionsClient();
+        var testId = 5;
+
+        var response = await client.GetAsync($"/api/greeter/{testId}");
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Equal($"Welcome to Azure Functions! Id: {testId}", content);
+    }
+    
+    [Fact]
     public async Task Function_CanPostWithJson()
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.PostAsJsonAsync("/api/Greeter", new Greeter.GreeterInput("TestUser"));
+        var response = await client.PostAsJsonAsync("/api/greeter", new Greeter.GreeterInput("TestUser"));
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
