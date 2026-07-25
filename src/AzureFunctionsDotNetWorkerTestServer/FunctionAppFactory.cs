@@ -14,6 +14,7 @@ public class FunctionAppFactory<TProgram>
 {
     private readonly Action<IServiceCollection>? _serviceOverrides;
 
+    // Required for IClassFixture<T> to work with xUnit, but not intended for direct use.
     public FunctionAppFactory()
     {
     }
@@ -27,8 +28,8 @@ public class FunctionAppFactory<TProgram>
     /// Creates an <see cref="HttpClient"/> pre-configured to drive the Functions worker pipeline
     /// for each request, enabling end-to-end in-process testing of HTTP trigger functions.
     /// </summary>
-    public HttpClient CreateFunctionsClient()
-        => CreateDefaultClient(new TestClientHandler(Services));
+    public HttpClient CreateFunctionsClient(TimeSpan? timeout = null)
+        => CreateDefaultClient(new TestClientHandler(Services, timeout ?? TimeSpan.FromSeconds(10)));
 
     protected override IHostBuilder CreateHostBuilder() =>
         Host.CreateDefaultBuilder(["--Functions:Worker:HostEndpoint=http://localhost:0/"])

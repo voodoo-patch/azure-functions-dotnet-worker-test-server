@@ -14,7 +14,7 @@ namespace AzureFunctionsDotNetWorkerTestServer;
 /// A <see cref="DelegatingHandler"/> that drives the Azure Functions worker pipeline for each
 /// HTTP request, enabling end-to-end in-process testing without the Azure Functions host or gRPC.
 /// </summary>
-internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
+internal class TestClientHandler(IServiceProvider provider, TimeSpan invocationTimeout) : DelegatingHandler
 {
     private const string InvocationIdHeader = "x-ms-invocation-id";
 
@@ -28,12 +28,24 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
         // Ensuring that the input binding feature is present in the function context features.
         ArgumentNullException.ThrowIfNull(functionContext.Features.Get<IFunctionInputBindingFeature>());
         
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(invocationTimeout);
+        
         // Drive the worker middleware pipeline concurrently — it will rendezvous with the
         // ASP.NET pipeline via DefaultHttpCoordinator once SetHttpContextAsync is called.
         var workerTask = WorkerInternals.InvokeFunctionAsync(provider, functionContext);
+        var response = await base.SendAsync(request, timeoutCts.Token);
 
-        var response = await base.SendAsync(request, ct);
-        await workerTask;
+        try
+        {
+            await workerTask.WaitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !ct.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                $"Function invocation timed out after {invocationTimeout}. " +
+                $"Request: {request.Method} {request.RequestUri?.AbsolutePath}");
+        }
         return response;
     }
     
@@ -61,7 +73,7 @@ internal class TestClientHandler(IServiceProvider provider) : DelegatingHandler
 
     /// <summary>
     /// Caches parsed route templates keyed by the Functions route pattern (e.g. "api/items/{id}"),
-    /// avoiding re-parsing the template on every incoming request.
+    /// avoiding reparsing the template on every incoming request.
     /// </summary>
     private static readonly ConcurrentDictionary<string, TemplateMatcher> RouteMatcherCache = new();
 
