@@ -34,6 +34,16 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
     }
     
     [Fact]
+    public async Task Function_ThrowsWhenRouteParamTypeDoesNotMatch()
+    {
+        var client = factory.CreateFunctionsClient();
+        var wrongTypeParameter = "abc";
+
+        Task<HttpResponseMessage> Invocation() => client.GetAsync($"/api/greeter/{wrongTypeParameter}");
+        await Assert.ThrowsAsync<InvalidOperationException>(Invocation);
+    }
+    
+    [Fact]
     public async Task Function_CanGetByQueryParam()
     {
         var client = factory.CreateFunctionsClient();
@@ -56,6 +66,15 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
 
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("Welcome to Azure Functions, TestUser!", content);
+    }
+    
+    [Fact]
+    public async Task Function_ThrowsOnInvalidRoute()
+    {
+        var client = factory.CreateFunctionsClient();
+
+        Task<HttpResponseMessage> InvokeNonExistent() => client.GetAsync("/api/nonexistent");
+        await Assert.ThrowsAsync<InvalidOperationException>(InvokeNonExistent);
     }
     
     [Fact]
