@@ -1,5 +1,6 @@
 using System.Formats.Asn1;
 using System.Net.Http.Json;
+using System.Text;
 using ExampleFunction;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 
@@ -62,6 +63,19 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
         var client = factory.CreateFunctionsClient();
 
         var response = await client.PostAsJsonAsync("/api/greeter", new Greeter.GreeterInput("TestUser"));
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Equal("Welcome to Azure Functions, TestUser!", content);
+    }
+    
+    [Fact]
+    public async Task Function_CanPostWithRawJson()
+    {
+        var client = factory.CreateFunctionsClient();
+
+        var requestContent = new StringContent("{\"name\":\"TestUser\"}", Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("/api/greeter", requestContent);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
