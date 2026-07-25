@@ -28,6 +28,9 @@ when:
 4. [Binding request data: `[FromBody]` and parameter conversion](04-binding-request-data-frombody-and-parameter-conversion.md) —
    making the worker's real input-binding/conversion pipeline run, so attributed parameters
    (starting with `[FromBody]`) get populated the same way they would in production.
+5. [Validating middleware short-circuit and exception paths](05-validating-middleware-short-circuit-and-exception-paths.md) —
+   closing middleware coverage with harness-focused non-happy path tests and worker registration
+   parity between production and test hosts.
 
 ## Architecture cheat sheet
 

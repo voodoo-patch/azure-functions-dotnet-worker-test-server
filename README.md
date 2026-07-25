@@ -40,17 +40,18 @@ Key design points:
 
 ## Quick Start
 
-### 1. Implement `IFunctionAppServices` in your `Program`
+### 1. Implement `IFunctionAppStartup` in your `Program`
 
 ```csharp
 // In your function app's Program.cs
-public class Program : IFunctionAppServices
+public class Program : IFunctionAppStartup
 {
     public static void Main(string[] args) 
     {        
         var builder = FunctionsApplication.CreateBuilder(args);
         
         ConfigureServices(builder.Services);
+        ConfigureWorker(builder);
         
         ...
     }
@@ -59,6 +60,12 @@ public class Program : IFunctionAppServices
     public static void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<IMyService, MyService>();
+    }
+
+    // Register worker middleware used by your function app.
+    public static void ConfigureWorker(IFunctionsWorkerApplicationBuilder builder)
+    {
+        builder.UseMiddleware<MyMiddleware>();
     }
 }
 ```
@@ -118,7 +125,7 @@ src/
     ServiceCollectionExtensions.cs               # ReplaceService<> helper for DI overrides
 
   AzureFunctionsDotNetWorkerTestServer.Abstractions/
-    IFunctionAppServices.cs                      # Interface function apps must implement to expose ConfigureServices
+    IFunctionAppStartup.cs                       # Interface function apps implement to expose service + worker pipeline setup
 
 demo/
   ExampleFunction/                               # Reference function app used by the test suite
@@ -169,7 +176,7 @@ For scenarios outside this scope, use the Azure Functions Core Tools or a hosted
 | 1 | Test project foundation | ✅ Complete |
 | 2 | Reusable worker fixture/factory | ✅ Complete |
 | 3 | HTTP invocation harness | ✅ Complete |
-| 4 | Middleware/filter coverage suite | ⬜ Planned |
+| 4 | Middleware/filter coverage suite | ✅ Complete |
 | 5 | Reliability and CI hardening | ⬜ Planned |
 
 ---
@@ -187,5 +194,4 @@ library and the reasoning behind each solution — a narrative companion to the 
 revisiting internals, diagnosing a similar "internal type not resolving" issue, or planning a
 refactor. It also includes an architecture cheat sheet of the internal worker types this library
 depends on via reflection.
-
 
