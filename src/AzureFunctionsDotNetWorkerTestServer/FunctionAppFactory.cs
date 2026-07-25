@@ -28,6 +28,7 @@ public class FunctionAppFactory<TProgram>
     /// Creates an <see cref="HttpClient"/> pre-configured to drive the Functions worker pipeline
     /// for each request, enabling end-to-end in-process testing of HTTP trigger functions.
     /// </summary>
+    /// <param name="timeout">The timeout for each function invocation. Defaults to 10 seconds if not specified.</param>
     public HttpClient CreateFunctionsClient(TimeSpan? timeout = null)
         => CreateDefaultClient(new TestClientHandler(Services, timeout ?? TimeSpan.FromSeconds(10)));
 
