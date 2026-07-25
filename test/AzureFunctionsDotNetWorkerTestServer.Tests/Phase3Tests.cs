@@ -1,3 +1,4 @@
+using System.Formats.Asn1;
 using System.Net.Http.Json;
 using ExampleFunction;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
@@ -26,6 +27,19 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
         var testId = 5;
 
         var response = await client.GetAsync($"/api/greeter/{testId}");
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Equal($"Welcome to Azure Functions! Id: {testId}", content);
+    }
+    
+    [Fact]
+    public async Task Function_CanGetByQueryParam()
+    {
+        var client = factory.CreateFunctionsClient();
+        var testId = 5;
+
+        var response = await client.GetAsync($"/api/greeterWithQuery?id={testId}");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();

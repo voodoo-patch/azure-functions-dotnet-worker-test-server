@@ -42,6 +42,18 @@ public class Greeter
             .LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
     }
+    
+    [Function("GreeterByQueryParam")]
+    public IActionResult RunByQueryParam(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithQuery")] HttpRequest req,
+        FunctionContext executionContext)
+    {
+        executionContext
+            .GetLogger<ILogger<Greeter>>()
+            .LogInformation("C# HTTP trigger function processed a request.");
+        var id = req.Query["id"];
+        return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
+    }
 
     [Function("GreeterWithInput")]
     public IActionResult RunWithInput(
