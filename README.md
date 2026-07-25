@@ -139,7 +139,7 @@ test/
 - HTTP trigger function invocation
 - Request/response shaping and content negotiation
 - DI container configuration and per-test overrides
-- Parameter binding for `HttpRequest`, `[FromBody]`, `[FromServices]`
+- Parameter binding for `HttpRequest`, route/query values, and `[FromBody]`
 
 **Out of scope (by design):**
 - Host-level auth/function key checks
@@ -168,11 +168,17 @@ For scenarios outside this scope, use the Azure Functions Core Tools or a hosted
 |-------|-------------|--------|
 | 1 | Test project foundation | ✅ Complete |
 | 2 | Reusable worker fixture/factory | ✅ Complete |
-| 3 | HTTP invocation harness | 🚧 In Progress |
+| 3 | HTTP invocation harness | ✅ Complete |
 | 4 | Middleware/filter coverage suite | ⬜ Planned |
 | 5 | Reliability and CI hardening | ⬜ Planned |
 
 ---
+
+
+## Known Non-Goals
+
+- Parameter-level `[FromServices]` injection is not targeted in this harness. Use constructor injection or `FunctionContext.InstanceServices` in isolated-worker functions.
+- Host-level behaviors (auth keys, trigger listeners, retries/checkpoint orchestration) remain out of scope.
 
 ## Implementation Journal
 
@@ -181,3 +187,5 @@ library and the reasoning behind each solution — a narrative companion to the 
 revisiting internals, diagnosing a similar "internal type not resolving" issue, or planning a
 refactor. It also includes an architecture cheat sheet of the internal worker types this library
 depends on via reflection.
+
+

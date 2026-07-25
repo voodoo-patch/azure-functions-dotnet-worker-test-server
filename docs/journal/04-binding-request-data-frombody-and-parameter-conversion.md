@@ -219,13 +219,15 @@ on to the next binding scenario:
   without bespoke code per feature going forward.
 - `[FromServices]` is confirmed unsupported by design (not a gap to fill later).
 
-## Known follow-ups for the next binding-related session
+## Phase 3 completion snapshot
 
-- **Route parameter binding.** Template *matching* works; the matched route values still need to
-  flow into `IFunctionBindingsFeature.InputData` (keyed by parameter/binding name) so a parameter
-  like `int id` from `items/{id}` actually converts, the same way `[FromBody]` now does.
-- **Query string / header binding**, if/when a scenario needs it — likely the same
-  `InputData`-population mechanism as route values.
-- Consider whether the `ResolvedProviders` cache in `WorkerInternals` needs any invalidation story
-  if a test ever swaps out DI registrations of a provider mid-run (unlikely given one `IHost` per
-  factory instance, but worth a note if that assumption ever changes).
+- **Route values are now propagated into `InputData`.** The route-matching path captures `RouteValueDictionary` values and passes them into the bindings proxy so `DefaultFunctionInputBindingFeature` can resolve parameters like `int id` by name.
+- **Query-string binding works in the current harness shape** through the same input conversion flow used for other simple parameters.
+- **Route constraint mismatch is pre-checked before invoking the worker pipeline.** The matcher now rejects invalid constrained values (for example, `abc` for `{id:int}`), which avoids coordinator deadlocks and produces immediate "no function matched" failures.
+- **Invocation timeout is configurable via `CreateFunctionsClient(TimeSpan?)`** with a documented default of 10 seconds, so deadlocks/future regressions fail deterministically.
+
+## Remaining items moved to Phase 4+
+
+- Extend constraint handling beyond base-token validation where needed (`int:min(1)`, custom constraints) if higher parity with endpoint routing becomes necessary.
+- Expand negative-path middleware assertions as part of the Phase 4 middleware/filter matrix.
+- Revisit cache invalidation strategy in `WorkerInternals` only if host/provider lifetimes change from the current one-host-per-factory model.
