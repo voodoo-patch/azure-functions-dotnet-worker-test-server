@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
+[Trait("Suite", "Harness")]
+[Trait("Speed", "Fast")]
 public class Phase1Tests(FunctionAppFactory<Program> factory)
     : IClassFixture<FunctionAppFactory<Program>>
 {

@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
+[Trait("Suite", "Harness")]
+[Trait("Speed", "Fast")]
 public class Phase2TestsWithNoCustomizations(FunctionAppFactory<Program> factory)
     : IClassFixture<FunctionAppFactory<Program>>
 {
@@ -12,6 +14,7 @@ public class Phase2TestsWithNoCustomizations(FunctionAppFactory<Program> factory
         var dummyService = factory.Services.GetService<IDummyService>();
         Assert.NotNull(dummyService);
         Assert.IsType<DummyService>(dummyService);
+        Assert.Equal("Hello from DummyService!", dummyService.GetData());
     }
 }
 
@@ -27,6 +30,8 @@ public class FunctionAppFactoryWithMockServices()
     }
 }
 
+[Trait("Suite", "Harness")]
+[Trait("Speed", "Fast")]
 public class Phase2TestsWithCustomizations(FunctionAppFactoryWithMockServices factory)
     : IClassFixture<FunctionAppFactoryWithMockServices>
 {

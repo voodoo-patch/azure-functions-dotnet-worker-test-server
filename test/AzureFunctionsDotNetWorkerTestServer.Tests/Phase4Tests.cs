@@ -4,6 +4,8 @@ using System.Net;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
+[Trait("Suite", "Harness")]
+[Trait("Speed", "Fast")]
 public class Phase4Tests(FunctionAppFactory<Program> factory)
     : IClassFixture<FunctionAppFactory<Program>>
 {

@@ -31,6 +31,9 @@ when:
 5. [Validating middleware short-circuit and exception paths](05-validating-middleware-short-circuit-and-exception-paths.md) —
    closing middleware coverage with harness-focused non-happy path tests and worker registration
    parity between production and test hosts.
+6. [Reliability, CI hardening, and version drift guards](06-reliability-ci-hardening-and-version-drift-guards.md) —
+   adding deterministic CI defaults, test categorization, fixture model documentation, and package
+   drift watchdog assertions.
 
 ## Architecture cheat sheet
 

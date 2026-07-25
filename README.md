@@ -177,15 +177,35 @@ For scenarios outside this scope, use the Azure Functions Core Tools or a hosted
 | 2 | Reusable worker fixture/factory | ✅ Complete |
 | 3 | HTTP invocation harness | ✅ Complete |
 | 4 | Middleware/filter coverage suite | ✅ Complete |
-| 5 | Reliability and CI hardening | ⬜ Planned |
+| 5 | Reliability and CI hardening | ✅ Complete |
 
 ---
 
+## Reliability and CI Conventions
+
+- **Test categories**: all current harness tests are marked with `Trait("Speed", "Fast")`. CI runs this
+  category by default via `dotnet test --filter "Speed=Fast"`.
+- **Fixture isolation model**: tests use `IClassFixture<FunctionAppFactory<TProgram>>`, sharing one
+  host instance per test class for deterministic startup behavior and faster execution.
+- **Version drift watchdog**: `Phase5Tests` asserts critical worker package majors (`2.x`) and
+  cross-project version alignment for `Microsoft.Azure.Functions.Worker` and
+  `Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore`.
+- **Deterministic CI environment**: workflow sets timezone/culture (`TZ=UTC`, `en_US.UTF-8`) and
+  stable .NET CLI flags before running tests.
+
+---
 
 ## Known Non-Goals
 
 - Parameter-level `[FromServices]` injection is not targeted in this harness. Use constructor injection or `FunctionContext.InstanceServices` in isolated-worker functions.
 - Host-level behaviors (auth keys, trigger listeners, retries/checkpoint orchestration) remain out of scope.
+
+## Escalation Path for Host-Level Behaviors
+
+When a scenario depends on host-managed runtime semantics (for example function keys/auth,
+extension listener behavior, trigger checkpoint/retry orchestration, or binding extension runtime
+contracts), run those assertions in a higher-fidelity suite with Azure Functions Core Tools or a
+deployed integration environment rather than this in-process harness.
 
 ## Implementation Journal
 
@@ -194,4 +214,3 @@ library and the reasoning behind each solution — a narrative companion to the 
 revisiting internals, diagnosing a similar "internal type not resolving" issue, or planning a
 refactor. It also includes an architecture cheat sheet of the internal worker types this library
 depends on via reflection.
-
