@@ -36,11 +36,14 @@ public class Program : IFunctionAppStartup
     // from the ASP.NET Core integration extension method that the TestServer needs to configure the Test Host's pipeline
     public static void ConfigureWorker(IFunctionsWorkerApplicationBuilder builder)
     {
-        builder.UseWhen<StampHttpHeaderMiddleware>(context =>
-        {
-            // We want to use this middleware only for http trigger invocations.
-            return context.FunctionDefinition.InputBindings.Values
-                .First(a => a.Type.EndsWith("Trigger")).Type == "httpTrigger";
-        });
+        builder.UseWhen<HttpExceptionMiddleware>(IsHttpTrigger);
+        builder.UseWhen<ShortCircuitMiddleware>(IsHttpTrigger);
+        builder.UseWhen<StampHttpHeaderMiddleware>(IsHttpTrigger);
     }
+
+    private static bool IsHttpTrigger(FunctionContext context) =>
+        context.FunctionDefinition.InputBindings.Values
+            .FirstOrDefault(a => a.Type.EndsWith("Trigger", StringComparison.OrdinalIgnoreCase))
+            ?.Type.Equals("httpTrigger", StringComparison.OrdinalIgnoreCase)
+        == true;
 }

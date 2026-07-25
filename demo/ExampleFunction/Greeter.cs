@@ -26,6 +26,14 @@ public class Greeter
     public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter")] HttpRequest req,
         FunctionContext executionContext)
     {
+        if (req.Headers.TryGetValue("X-Throw-Function", out var values) &&
+            values.Any(v => string.Equals(v, "true", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("Forced function failure.");
+        }
+
+        req.HttpContext.Response.Headers["X-Function-Executed"] = "true";
+
         executionContext
             .GetLogger<ILogger<Greeter>>()
             .LogInformation("C# HTTP trigger function processed a request.");
