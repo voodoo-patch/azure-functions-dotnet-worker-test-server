@@ -3,9 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
-[Trait("Suite", "Harness")]
-[Trait("Speed", "Fast")]
-public class Phase2TestsWithNoCustomizations(FunctionAppFactory<Program> factory)
+[Trait("Suite", "DependencyInjection")]
+public class ApplicationServiceRegistrationTests(FunctionAppFactory<Program> factory)
     : IClassFixture<FunctionAppFactory<Program>>
 {
     [Fact]
@@ -18,21 +17,8 @@ public class Phase2TestsWithNoCustomizations(FunctionAppFactory<Program> factory
     }
 }
 
-public class FunctionAppFactoryWithMockServices()
-    : FunctionAppFactory<Program>(services => services.ReplaceService<IDummyService, MockDummyService>())
-{
-    public class MockDummyService : IDummyService
-    {
-        public string GetData()
-        {
-            return "Mock data";
-        }
-    }
-}
-
-[Trait("Suite", "Harness")]
-[Trait("Speed", "Fast")]
-public class Phase2TestsWithCustomizations(FunctionAppFactoryWithMockServices factory)
+[Trait("Suite", "DependencyInjection")]
+public class ServiceOverrideTests(FunctionAppFactoryWithMockServices factory)
     : IClassFixture<FunctionAppFactoryWithMockServices>
 {
     [Fact]

@@ -128,13 +128,17 @@ src/
     IFunctionAppStartup.cs                       # Interface function apps implement to expose service + worker pipeline setup
 
 demo/
-  ExampleFunction/                               # Reference function app used by the test suite
+  ExampleFunction/                               # Supported reference Function App
+    README.md                                    # Setup and test walkthrough
 
 test/
-  AzureFunctionsDotNetWorkerTestServer.Tests/    # Test suite covering each build phase
-    Phase1Tests.cs                               # Assembly load and DI bootstrap smoke tests
-    Phase2Tests.cs                               # Fixture lifecycle and DI override verification
-    Phase3Tests.cs                               # HTTP invocation harness tests
+  AzureFunctionsDotNetWorkerTestServer.Tests/    # Test suite organized by behavior area
+    Hosting/                                     # Host bootstrap coverage
+    DependencyInjection/                         # Application services and override coverage
+    Http/                                        # HTTP routing and binding coverage
+    Middleware/                                  # Middleware pipeline coverage
+    Packaging/                                   # Dependency and packaging compatibility checks
+    TestInfrastructure/                          # Shared test fixtures
 ```
 
 ---
@@ -167,31 +171,49 @@ For scenarios outside this scope, use the Azure Functions Core Tools or a hosted
 - `Microsoft.AspNetCore.Mvc.Testing` 10.x
 - xUnit (for the test suite; the library itself is test-framework-agnostic)
 
+## Installation
+
+Install the core package in a test project:
+
+```powershell
+dotnet add package Azure.Functions.Worker.TestServer
+```
+
+The package brings the companion abstractions package transitively. Your Function App must use the
+isolated worker model and expose its service and worker configuration through
+`IFunctionAppStartup`, as shown above.
+
+For a clone of this repository, use the following commands:
+
+```powershell
+dotnet restore
+dotnet build azure-functions-dotnet-worker-test-server.slnx --configuration Release --no-restore
+dotnet test test\AzureFunctionsDotNetWorkerTestServer.Tests\AzureFunctionsDotNetWorkerTestServer.Tests.csproj --configuration Release --no-build
+```
+
+See the [Example Function walkthrough](demo/ExampleFunction/README.md) for a runnable reference
+app and the tests that invoke it.
+
 ---
 
-## Status
+## Stability
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Test project foundation | ✅ Complete |
-| 2 | Reusable worker fixture/factory | ✅ Complete |
-| 3 | HTTP invocation harness | ✅ Complete |
-| 4 | Middleware/filter coverage suite | ✅ Complete |
-| 5 | Reliability and CI hardening | ✅ Complete |
+The library currently supports in-process component testing for HTTP-triggered isolated-worker
+Function Apps and their worker middleware. The documented non-goals below remain intentionally
+unsupported. The test suite is organized by behavior area and runs in CI on each pull request and
+push to `main`.
 
 ---
 
 ## Reliability and CI Conventions
 
-- **Test categories**: all current harness tests are marked with `Trait("Speed", "Fast")`. CI runs this
-  category by default via `dotnet test --filter "Speed=Fast"`.
 - **Fixture isolation model**: tests use `IClassFixture<FunctionAppFactory<TProgram>>`, sharing one
   host instance per test class for deterministic startup behavior and faster execution.
-- **Version drift watchdog**: `Phase5Tests` asserts critical worker package majors (`2.x`) and
+- **Version drift watchdog**: package compatibility tests assert critical worker package majors (`2.x`) and
   cross-project version alignment for `Microsoft.Azure.Functions.Worker` and
   `Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore`.
 - **Deterministic CI environment**: workflow sets timezone/culture (`TZ=UTC`, `en_US.UTF-8`) and
-  stable .NET CLI flags before running tests.
+  stable .NET CLI flags before building, testing, and packing the libraries.
 
 ---
 
@@ -214,3 +236,11 @@ library and the reasoning behind each solution — a narrative companion to the 
 revisiting internals, diagnosing a similar "internal type not resolving" issue, or planning a
 refactor. It also includes an architecture cheat sheet of the internal worker types this library
 depends on via reflection.
+
+## Contributing and support
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request. Community support
+is provided on a best-effort basis through [GitHub Issues](SUPPORT.md). For a vulnerability, do
+not open a public issue; use the private reporting process in [SECURITY.md](SECURITY.md).
+
+This project is licensed under the [Apache License 2.0](LICENSE).

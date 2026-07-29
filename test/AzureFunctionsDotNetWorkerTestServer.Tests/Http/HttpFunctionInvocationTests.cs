@@ -5,9 +5,8 @@ using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
-[Trait("Suite", "Harness")]
-[Trait("Speed", "Fast")]
-public class Phase3Tests(FunctionAppFactory<Program> factory)
+[Trait("Suite", "Http")]
+public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
     : IClassFixture<FunctionAppFactory<Program>>
 {
     [Fact]
@@ -103,9 +102,8 @@ public class Phase3Tests(FunctionAppFactory<Program> factory)
     }
 }
 
-[Trait("Suite", "Harness")]
-[Trait("Speed", "Fast")]
-public class Phase3TestsWithCustomizations(FunctionAppFactoryWithMockServices factory)
+[Trait("Suite", "Http")]
+public class HttpFunctionInvocationWithServiceOverridesTests(FunctionAppFactoryWithMockServices factory)
     : IClassFixture<FunctionAppFactoryWithMockServices>
 {
     [Fact]

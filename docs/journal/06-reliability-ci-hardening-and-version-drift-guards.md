@@ -14,23 +14,19 @@ were operational:
 
 ## Reliability changes implemented
 
-1. **Test categorization**
-   - Added `Trait("Speed", "Fast")` and suite-level traits across phase test classes.
-   - CI now runs fast harness tests via trait filter, making execution intent explicit.
-
-2. **Version drift watchdog tests**
-   - Added `Phase5Tests` to assert:
+1. **Version drift watchdog tests**
+   - Added `WorkerPackageCompatibilityTests` to assert:
      - critical Azure Functions worker packages remain on supported major version `2.x`,
      - worker package versions are aligned across app/library/abstractions/tests.
    - This makes dependency skew fail loudly during test execution.
 
-3. **Deterministic CI workflow**
+2. **Deterministic CI workflow**
    - Added `.github/workflows/ci.yml` with:
      - stable .NET setup and restore/test steps,
      - normalized environment (`TZ=UTC`, `LANG/LC_ALL=en_US.UTF-8`),
      - deterministic .NET CLI settings (`DOTNET_NOLOGO`, telemetry/first-run flags).
 
-4. **Explicit fixture model and escalation guidance**
+3. **Explicit fixture model and escalation guidance**
    - Documented that harness tests use `IClassFixture<FunctionAppFactory<TProgram>>` (one host per
      class), balancing determinism with speed.
    - Documented when to escalate to host-level integration tests for out-of-scope runtime behavior.

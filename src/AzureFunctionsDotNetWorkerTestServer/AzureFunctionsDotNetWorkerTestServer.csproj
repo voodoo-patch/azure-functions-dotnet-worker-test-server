@@ -4,6 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>Azure.Functions.Worker.TestServer</PackageId>
+    <Description>In-process component testing for HTTP-triggered Azure Functions isolated-worker applications.</Description>
+    <PackageTags>azure-functions;isolated-worker;testing;testserver;http</PackageTags>
   </PropertyGroup>
 
   <!-- These are the same dependencies as the function project, required to start a worker test server -->
@@ -12,8 +15,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"
+                      Condition="'$(EnableRepositorySourceLink)' == 'true'" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AzureFunctionsDotNetWorkerTestServer.Abstractions\AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
   </ItemGroup>
 </Project>

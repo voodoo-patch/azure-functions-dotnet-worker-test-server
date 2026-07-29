@@ -104,7 +104,7 @@ singleton/scoped/transient semantics.
 
 ## Outcome
 
-`Phase2Tests.cs` verifies both that:
+The dependency-injection test area verifies both that:
 1. A factory with no overrides exposes the app's real services unmodified
    (`Host_BuildsAndContainsProgramServices`).
 2. A factory with overrides swaps the service as expected once the host is built

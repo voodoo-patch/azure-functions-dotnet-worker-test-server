@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Authors>Samuele Pecetto</Authors>
+    <Copyright>Copyright (c) 2026 Samuele Pecetto</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>See the release associated with this package version for changes.</PackageReleaseNotes>
+    <PackageProjectUrl Condition="'$(RepositoryUrl)' != ''">$(RepositoryUrl)</PackageProjectUrl>
+    <RepositoryType Condition="'$(RepositoryUrl)' != ''">git</RepositoryType>
+    <PublishRepositoryUrl Condition="'$(RepositoryUrl)' != ''">true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

@@ -2,9 +2,8 @@ using System.Xml.Linq;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;
 
-[Trait("Suite", "Reliability")]
-[Trait("Speed", "Fast")]
-public class Phase5Tests
+[Trait("Suite", "Packaging")]
+public class WorkerPackageCompatibilityTests
 {
     [Fact]
     public void WorkerPackageMajors_ArePinnedToSupportedRange()

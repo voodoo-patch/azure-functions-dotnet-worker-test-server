@@ -154,7 +154,7 @@ if (context.Properties.TryGetValue(PropertyBagKeys.ConverterType, out var conver
 "unhandled", which looks identical to "no converter configured at all"). The fix was one line:
 store `inputConverterAttr.ConverterType.AssemblyQualifiedName!` instead of the `Type` itself.
 
-With that, `[FromBody]` bound correctly end to end — `Phase3Tests.Function_CanPostWithJson` passed.
+With that, `[FromBody]` bound correctly end to end — `HttpFunctionInvocationTests.Function_CanPostWithJson` passed.
 
 ## A dead end worth recording: `IFromBodyConversionFeature` does not need manual seeding
 

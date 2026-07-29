@@ -153,7 +153,7 @@ reflection way and cached onto the proxy before it's wired into the invocation f
 
 ## Outcome
 
-By the end of this phase, `Phase3Tests.Function_CanGet` passed: a real `HttpClient.GetAsync` call
+By the end of this phase, `HttpFunctionInvocationTests.Function_CanGet` passed: a real `HttpClient.GetAsync` call
 executes the real `Greeter.Run` method (with its real DI-injected `ILogger<Greeter>`), through the
 real worker middleware pipeline, and gets back the real `IActionResult`-shaped HTTP response —
 with no function parameters beyond the trigger request itself. Parameter *binding* (anything past
