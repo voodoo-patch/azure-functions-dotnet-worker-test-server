@@ -1,4 +1,4 @@
-﻿using ExampleFunction;
+using ExampleFunction;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureFunctionsDotNetWorkerTestServer.Tests;

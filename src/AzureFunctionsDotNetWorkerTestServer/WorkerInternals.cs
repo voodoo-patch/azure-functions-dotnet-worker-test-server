@@ -101,7 +101,7 @@ internal static class WorkerInternals
 
         ((TestFunctionBindingsFeatureProxy)proxy).CachedOutputBindingsInfo = outputBindingsInfo;
         ((TestFunctionBindingsFeatureProxy)proxy).RouteValues = routeValues;
-        
+
         return proxy;
     }
 

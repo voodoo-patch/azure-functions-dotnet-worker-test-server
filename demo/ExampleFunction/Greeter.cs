@@ -50,7 +50,7 @@ public class Greeter
             .LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
     }
-    
+
     [Function("GreeterByQueryParam")]
     public IActionResult RunByQueryParam(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithQuery")] HttpRequest req,

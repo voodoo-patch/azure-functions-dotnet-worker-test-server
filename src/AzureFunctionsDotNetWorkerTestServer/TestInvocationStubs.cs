@@ -44,13 +44,13 @@ internal class TestFunctionBindingsFeatureProxy : DispatchProxy
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) =>
         targetMethod?.Name switch
         {
-            "get_TriggerMetadata"    => ImmutableDictionary<string, object?>.Empty,
-            "get_InputData"          => RouteValues.ToImmutableDictionary(),
-            "get_OutputBindingData"  => _outputData,
+            "get_TriggerMetadata" => ImmutableDictionary<string, object?>.Empty,
+            "get_InputData" => RouteValues.ToImmutableDictionary(),
+            "get_OutputBindingData" => _outputData,
             "get_OutputBindingsInfo" => CachedOutputBindingsInfo,
-            "get_InvocationResult"   => _invocationResult,
-            "set_InvocationResult"   => SetResult(args),
-            _                        => null,
+            "get_InvocationResult" => _invocationResult,
+            "set_InvocationResult" => SetResult(args),
+            _ => null,
         };
 
     private object? SetResult(object?[]? args)

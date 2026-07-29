@@ -20,7 +20,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("Welcome to Azure Functions!", content);
     }
-    
+
     [Fact]
     public async Task Function_CanGetById()
     {
@@ -33,7 +33,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal($"Welcome to Azure Functions! Id: {testId}", content);
     }
-    
+
     [Fact]
     public async Task Function_ThrowsWhenRouteParamTypeDoesNotMatch()
     {
@@ -43,7 +43,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         Task<HttpResponseMessage> Invocation() => client.GetAsync($"/api/greeter/{wrongTypeParameter}");
         await Assert.ThrowsAsync<InvalidOperationException>(Invocation);
     }
-    
+
     [Fact]
     public async Task Function_CanGetByQueryParam()
     {
@@ -56,7 +56,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal($"Welcome to Azure Functions! Id: {testId}", content);
     }
-    
+
     [Fact]
     public async Task Function_CanPostWithJson()
     {
@@ -68,7 +68,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("Welcome to Azure Functions, TestUser!", content);
     }
-    
+
     [Fact]
     public async Task Function_CanPostWithRawJson()
     {
@@ -81,7 +81,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("Welcome to Azure Functions, TestUser!", content);
     }
-    
+
     [Fact]
     public async Task Function_ThrowsOnInvalidRoute()
     {
@@ -90,14 +90,14 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         Task<HttpResponseMessage> InvokeNonExistent() => client.GetAsync("/api/nonexistent");
         await Assert.ThrowsAsync<InvalidOperationException>(InvokeNonExistent);
     }
-    
+
     [Fact]
     public void ProgramsAssemblyContains_GeneratedFunctionMetadataProvider()
     {
         var types = typeof(Program).Assembly.GetTypes()
             .Where(t => typeof(IFunctionMetadataProvider).IsAssignableFrom(t))
             .ToList();
-        
+
         Assert.NotEmpty(types);
     }
 }
