@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 /// <summary>
 /// Centralizes resolution of Azure Functions Worker internal types and methods via reflection.

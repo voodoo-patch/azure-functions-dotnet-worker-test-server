@@ -7,6 +7,7 @@
     <PackageId>Azure.Functions.Worker.TestServer</PackageId>
     <Description>In-process component testing for HTTP-triggered Azure Functions isolated-worker applications.</Description>
     <PackageTags>azure-functions;isolated-worker;testing;testserver;http</PackageTags>
+    <RootNamespace>Azure.Functions.Worker.TestServer</RootNamespace>
   </PropertyGroup>
 
   <!-- These are the same dependencies as the function project, required to start a worker test server -->
@@ -19,7 +20,7 @@
                       Condition="'$(EnableRepositorySourceLink)' == 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AzureFunctionsDotNetWorkerTestServer.Abstractions\AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj" />
+    <ProjectReference Include="..\Worker.TestServer.Abstractions\Worker.TestServer.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />

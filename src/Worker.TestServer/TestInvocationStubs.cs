@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 internal sealed class TestFunctionInvocation(string id, string functionId) : FunctionInvocation
 {

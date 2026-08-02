@@ -15,7 +15,7 @@ Examples are organized by trigger type under this project:
   `Http\StampHttpHeaderMiddleware.cs` contain middleware used by HTTP-triggered examples.
 - `Program.cs` remains at the project root and wires host/services/worker middleware.
 
-The companion tests in `test\AzureFunctionsDotNetWorkerTestServer.Tests` demonstrate:
+The companion tests in `test\Azure.Functions.Worker.TestServer.Tests` demonstrate:
 
 - HTTP GET, constrained-route, query-string, and JSON-body invocation;
 - service replacement through a custom `FunctionAppFactory<Program>`;
@@ -27,7 +27,7 @@ From the repository root, restore and run the HTTP invocation tests:
 
 ```powershell
 dotnet restore
-dotnet test test\AzureFunctionsDotNetWorkerTestServer.Tests\AzureFunctionsDotNetWorkerTestServer.Tests.csproj --configuration Release --filter "Suite=Http"
+dotnet test test\Azure.Functions.Worker.TestServer.Tests\Azure.Functions.Worker.TestServer.Tests.csproj --configuration Release --filter "Suite=Http"
 ```
 
 Read `Program.cs` first to see the testable Function App setup, then see the HTTP and middleware

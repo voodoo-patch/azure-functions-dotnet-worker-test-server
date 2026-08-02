@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests.Packaging;
+namespace Azure.Functions.Worker.TestServer.Tests.Packaging;
 
 [Trait("Suite", "Packaging")]
 public class WorkerPackageCompatibilityTests
@@ -12,9 +12,9 @@ public class WorkerPackageCompatibilityTests
         var csprojPaths = new[]
         {
             Path.Combine(repoRoot, "demo", "ExampleFunction", "ExampleFunction.csproj"),
-            Path.Combine(repoRoot, "src", "AzureFunctionsDotNetWorkerTestServer", "AzureFunctionsDotNetWorkerTestServer.csproj"),
-            Path.Combine(repoRoot, "src", "AzureFunctionsDotNetWorkerTestServer.Abstractions", "AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj"),
-            Path.Combine(repoRoot, "test", "AzureFunctionsDotNetWorkerTestServer.Tests", "AzureFunctionsDotNetWorkerTestServer.Tests.csproj"),
+            Path.Combine(repoRoot, "src", "Worker.TestServer", "Worker.TestServer.csproj"),
+            Path.Combine(repoRoot, "src", "Worker.TestServer.Abstractions", "Worker.TestServer.Abstractions.csproj"),
+            Path.Combine(repoRoot, "test", "Worker.TestServer.Tests", "Worker.TestServer.Tests.csproj"),
         };
 
         foreach (var path in csprojPaths)
@@ -23,8 +23,8 @@ public class WorkerPackageCompatibilityTests
             Assert.Equal(2, ParseMajor(workerVersion));
 
             if (Path.GetFileName(path).Equals("ExampleFunction.csproj", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetFileName(path).Equals("AzureFunctionsDotNetWorkerTestServer.csproj", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetFileName(path).Equals("AzureFunctionsDotNetWorkerTestServer.Tests.csproj", StringComparison.OrdinalIgnoreCase))
+                Path.GetFileName(path).Equals("Worker.TestServer.csproj", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetFileName(path).Equals("Worker.TestServer.Tests.csproj", StringComparison.OrdinalIgnoreCase))
             {
                 var httpVersion = GetPackageVersion(path, "Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore");
                 Assert.Equal(2, ParseMajor(httpVersion));
@@ -38,9 +38,9 @@ public class WorkerPackageCompatibilityTests
         var repoRoot = FindRepositoryRoot();
 
         var appProject = Path.Combine(repoRoot, "demo", "ExampleFunction", "ExampleFunction.csproj");
-        var libProject = Path.Combine(repoRoot, "src", "AzureFunctionsDotNetWorkerTestServer", "AzureFunctionsDotNetWorkerTestServer.csproj");
-        var abstractionsProject = Path.Combine(repoRoot, "src", "AzureFunctionsDotNetWorkerTestServer.Abstractions", "AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj");
-        var testProject = Path.Combine(repoRoot, "test", "AzureFunctionsDotNetWorkerTestServer.Tests", "AzureFunctionsDotNetWorkerTestServer.Tests.csproj");
+        var libProject = Path.Combine(repoRoot, "src", "Worker.TestServer", "Worker.TestServer.csproj");
+        var abstractionsProject = Path.Combine(repoRoot, "src", "Worker.TestServer.Abstractions", "Worker.TestServer.Abstractions.csproj");
+        var testProject = Path.Combine(repoRoot, "test", "Worker.TestServer.Tests", "Worker.TestServer.Tests.csproj");
 
         var expectedWorkerVersion = GetPackageVersion(appProject, "Microsoft.Azure.Functions.Worker");
         Assert.Equal(expectedWorkerVersion, GetPackageVersion(libProject, "Microsoft.Azure.Functions.Worker"));

@@ -1,4 +1,4 @@
-using AzureFunctionsDotNetWorkerTestServer.Abstractions;
+using Azure.Functions.Worker.TestServer.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 public class FunctionAppFactory<TProgram>
     : WebApplicationFactory<TProgram>

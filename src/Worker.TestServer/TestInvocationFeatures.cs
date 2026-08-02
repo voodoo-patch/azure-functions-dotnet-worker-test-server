@@ -1,7 +1,7 @@
 using System.Collections;
 using Microsoft.Azure.Functions.Worker;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 public class TestInvocationFeatures(IServiceProvider serviceProvider) : IInvocationFeatures
 {

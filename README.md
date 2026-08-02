@@ -115,7 +115,7 @@ public class MyFunctionFactoryWithMocks()
 
 ```
 src/
-  AzureFunctionsDotNetWorkerTestServer/          # Core library
+  Azure.Functions.Worker.TestServer/          # Core library
     FunctionAppFactory.cs                        # WebApplicationFactory<T> subclass; entry point for test authors
     TestClientHandler.cs                         # DelegatingHandler; routes HTTP requests through the worker pipeline
     TestFunctionDefinition.cs                    # FunctionDefinition built from source-generated metadata
@@ -124,7 +124,7 @@ src/
     WorkerInternals.cs                           # Reflection gateway to internal worker types (single source of truth)
     ServiceCollectionExtensions.cs               # ReplaceService<> helper for DI overrides
 
-  AzureFunctionsDotNetWorkerTestServer.Abstractions/
+  Azure.Functions.Worker.TestServer.Abstractions/
     IFunctionAppStartup.cs                       # Interface function apps implement to expose service + worker pipeline setup
 
 demo/
@@ -132,7 +132,7 @@ demo/
     README.md                                    # Setup and test walkthrough
 
 test/
-  AzureFunctionsDotNetWorkerTestServer.Tests/    # Test suite organized by behavior area
+  Azure.Functions.Worker.TestServer.Tests/    # Test suite organized by behavior area
     Hosting/                                     # Host bootstrap coverage
     DependencyInjection/                         # Application services and override coverage
     Http/                                        # HTTP routing and binding coverage
@@ -188,7 +188,7 @@ For a clone of this repository, use the following commands:
 ```powershell
 dotnet restore
 dotnet build azure-functions-dotnet-worker-test-server.slnx --configuration Release --no-restore
-dotnet test test\AzureFunctionsDotNetWorkerTestServer.Tests\AzureFunctionsDotNetWorkerTestServer.Tests.csproj --configuration Release --no-build
+dotnet test test\Azure.Functions.Worker.TestServer.Tests\Azure.Functions.Worker.TestServer.Tests.csproj --configuration Release --no-build
 ```
 
 See the [Example Function walkthrough](demo/ExampleFunction/README.md) for a runnable reference

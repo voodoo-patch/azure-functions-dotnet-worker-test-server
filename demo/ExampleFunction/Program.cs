@@ -1,4 +1,4 @@
-using AzureFunctionsDotNetWorkerTestServer.Abstractions;
+using Azure.Functions.Worker.TestServer.Abstractions;
 using ExampleFunction.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;

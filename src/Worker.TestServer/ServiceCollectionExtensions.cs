@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 public static class ServiceCollectionExtensions
 {

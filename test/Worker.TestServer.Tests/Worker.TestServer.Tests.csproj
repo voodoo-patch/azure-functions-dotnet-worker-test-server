@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <RootNamespace>Azure.Functions.Worker.TestServer.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,7 +34,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\demo\ExampleFunction\ExampleFunction.csproj" />
-      <ProjectReference Include="..\..\src\AzureFunctionsDotNetWorkerTestServer\AzureFunctionsDotNetWorkerTestServer.csproj" />
+      <ProjectReference Include="..\..\src\Worker.TestServer\Worker.TestServer.csproj" />
     </ItemGroup>
 
 </Project>

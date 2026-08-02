@@ -1,11 +1,11 @@
 using System.Net.Http.Json;
 using System.Text;
-using AzureFunctionsDotNetWorkerTestServer.Tests.TestInfrastructure;
+using Azure.Functions.Worker.TestServer.Tests.TestInfrastructure;
 using ExampleFunction;
 using ExampleFunction.Http;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests.Http;
+namespace Azure.Functions.Worker.TestServer.Tests.Http;
 
 [Trait("Suite", "Http")]
 public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)

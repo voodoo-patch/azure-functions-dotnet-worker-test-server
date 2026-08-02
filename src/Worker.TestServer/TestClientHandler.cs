@@ -10,7 +10,7 @@ using Microsoft.Azure.Functions.Worker.Context.Features;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 /// <summary>
 /// A <see cref="DelegatingHandler"/> that drives the Azure Functions worker pipeline for each

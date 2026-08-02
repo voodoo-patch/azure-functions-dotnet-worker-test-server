@@ -7,7 +7,7 @@ using Microsoft.Azure.Functions.Worker.Converters;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 using Microsoft.Azure.Functions.Worker.Extensions.Abstractions;
 
-namespace AzureFunctionsDotNetWorkerTestServer;
+namespace Azure.Functions.Worker.TestServer;
 
 /// <summary>
 /// A test-only <see cref="FunctionDefinition"/> built from source-generated <see cref="IFunctionMetadata"/>.

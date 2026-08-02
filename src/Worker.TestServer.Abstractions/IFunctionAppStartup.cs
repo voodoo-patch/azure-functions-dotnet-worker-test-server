@@ -1,7 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Abstractions;
+namespace Azure.Functions.Worker.TestServer.Abstractions;
 
 public interface IFunctionAppStartup
 {

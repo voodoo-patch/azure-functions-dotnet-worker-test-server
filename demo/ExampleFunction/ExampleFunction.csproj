@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AzureFunctionsDotNetWorkerTestServer.Abstractions\AzureFunctionsDotNetWorkerTestServer.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Worker.TestServer.Abstractions\Worker.TestServer.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
