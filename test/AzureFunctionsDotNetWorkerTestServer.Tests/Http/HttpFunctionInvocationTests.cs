@@ -16,7 +16,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.GetAsync("/api/greeter");
+        var response = await client.GetAsync("/api/http-trigger-examples");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -29,7 +29,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var client = factory.CreateFunctionsClient();
         var testId = 5;
 
-        var response = await client.GetAsync($"/api/greeter/{testId}");
+        var response = await client.GetAsync($"/api/http-trigger-examples/{testId}");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -42,7 +42,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var client = factory.CreateFunctionsClient();
         var wrongTypeParameter = "abc";
 
-        Task<HttpResponseMessage> Invocation() => client.GetAsync($"/api/greeter/{wrongTypeParameter}");
+        Task<HttpResponseMessage> Invocation() => client.GetAsync($"/api/http-trigger-examples/{wrongTypeParameter}");
         await Assert.ThrowsAsync<InvalidOperationException>(Invocation);
     }
 
@@ -52,7 +52,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var client = factory.CreateFunctionsClient();
         var testId = 5;
 
-        var response = await client.GetAsync($"/api/greeterWithQuery?id={testId}");
+        var response = await client.GetAsync($"/api/http-trigger-examples/by-query?id={testId}");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -64,7 +64,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.PostAsJsonAsync("/api/greeter", new Greeter.GreeterInput("TestUser"));
+        var response = await client.PostAsJsonAsync("/api/http-trigger-examples", new HttpTriggerExamples.HttpTriggerExampleInput("TestUser"));
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -77,7 +77,7 @@ public class HttpFunctionInvocationTests(FunctionAppFactory<Program> factory)
         var client = factory.CreateFunctionsClient();
 
         var requestContent = new StringContent("{\"name\":\"TestUser\"}", Encoding.UTF8, "application/json");
-        var response = await client.PostAsync("/api/greeter", requestContent);
+        var response = await client.PostAsync("/api/http-trigger-examples", requestContent);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -113,7 +113,7 @@ public class HttpFunctionInvocationWithServiceOverridesTests(FunctionAppFactoryW
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.GetAsync("/api/greeterWithService");
+        var response = await client.GetAsync("/api/http-trigger-examples/with-service");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();

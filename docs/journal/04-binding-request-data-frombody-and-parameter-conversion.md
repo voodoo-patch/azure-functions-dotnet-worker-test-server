@@ -172,7 +172,7 @@ actual defect is elsewhere (as it was here — the real defects were steps 4–6
 The original demo function used `[FromServices] IDummyService dummyService` on a method parameter,
 mirroring ASP.NET Core MVC convention. There is no isolated-worker equivalent of parameter-level
 service injection — searching the worker source and samples turned up nothing. The demo function
-was changed to use **constructor injection** instead (`Greeter(ILogger<Greeter> logger, IDummyService
+was changed to use **constructor injection** instead (`HttpTriggerExamples(ILogger<HttpTriggerExamples> logger, IDummyService
 dummyService)`), which is the actual, supported isolated-worker pattern, and is already exercised
 correctly by the DI container built in [phase 2](02-hosting-the-worker-inside-webapplicationfactory.md).
 This is now a documented constraint rather than an open gap — see the cheat sheet in the journal

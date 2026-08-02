@@ -154,7 +154,7 @@ reflection way and cached onto the proxy before it's wired into the invocation f
 ## Outcome
 
 By the end of this phase, `HttpFunctionInvocationTests.Function_CanGet` passed: a real `HttpClient.GetAsync` call
-executes the real `Greeter.Run` method (with its real DI-injected `ILogger<Greeter>`), through the
+executes the real `HttpTriggerExamples.RunGet` method (with its real DI-injected `ILogger<HttpTriggerExamples>`), through the
 real worker middleware pipeline, and gets back the real `IActionResult`-shaped HTTP response —
 with no function parameters beyond the trigger request itself. Parameter *binding* (anything past
 the bare `HttpRequest`) was explicitly out of scope here and became the subject of

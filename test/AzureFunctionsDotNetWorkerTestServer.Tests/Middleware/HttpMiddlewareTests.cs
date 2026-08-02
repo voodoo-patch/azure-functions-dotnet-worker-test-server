@@ -13,7 +13,7 @@ public class HttpMiddlewareTests(FunctionAppFactory<Program> factory)
     {
         var client = factory.CreateFunctionsClient();
 
-        var response = await client.GetAsync("/api/greeter");
+        var response = await client.GetAsync("/api/http-trigger-examples");
         response.EnsureSuccessStatusCode();
 
         Assert.True(response.Headers.Contains("X-Stamp"));
@@ -23,7 +23,7 @@ public class HttpMiddlewareTests(FunctionAppFactory<Program> factory)
     public async Task Function_MiddlewareCanShortCircuit()
     {
         var client = factory.CreateFunctionsClient();
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/greeter");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/http-trigger-examples");
         request.Headers.Add("X-Short-Circuit", "true");
 
         var response = await client.SendAsync(request);
@@ -36,7 +36,7 @@ public class HttpMiddlewareTests(FunctionAppFactory<Program> factory)
     public async Task Function_MiddlewareCanHandleFunctionException()
     {
         var client = factory.CreateFunctionsClient();
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/greeter");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/http-trigger-examples");
         request.Headers.Add("X-Throw-Function", "true");
 
         var response = await client.SendAsync(request);

@@ -9,7 +9,8 @@ exposes its service and middleware registration through `IFunctionAppStartup`, a
 
 Examples are organized by trigger type under this project:
 
-- `Http\Greeter.cs` contains HTTP-triggered functions and input models.
+- `Http\HttpTriggerExamples.cs` contains HTTP-triggered function examples (GET, POST,
+  route args, query strings, body binding, and DI/service resolution).
 - `Http\HttpExceptionMiddleware.cs`, `Http\ShortCircuitMiddleware.cs`, and
   `Http\StampHttpHeaderMiddleware.cs` contain middleware used by HTTP-triggered examples.
 - `Program.cs` remains at the project root and wires host/services/worker middleware.

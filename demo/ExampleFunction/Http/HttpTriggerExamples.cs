@@ -20,10 +20,10 @@ public class DummyService : IDummyService
     }
 }
 
-public class Greeter
+public class HttpTriggerExamples
 {
-    [Function("Greeter")]
-    public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter")] HttpRequest req,
+    [Function("HttpTriggerExamplesGet")]
+    public IActionResult RunGet([HttpTrigger(AuthorizationLevel.Function, "get", Route = "http-trigger-examples")] HttpRequest req,
         FunctionContext executionContext)
     {
         if (req.Headers.TryGetValue("X-Throw-Function", out var values) &&
@@ -35,52 +35,52 @@ public class Greeter
         req.HttpContext.Response.Headers["X-Function-Executed"] = "true";
 
         executionContext
-            .GetLogger<ILogger<Greeter>>()
+            .GetLogger<ILogger<HttpTriggerExamples>>()
             .LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult("Welcome to Azure Functions!");
     }
 
-    [Function("GreeterById")]
-    public IActionResult RunById(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeter/{id:int}")] HttpRequest req, int id,
+    [Function("HttpTriggerExamplesGetById")]
+    public IActionResult RunGetById(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "http-trigger-examples/{id:int}")] HttpRequest req, int id,
         FunctionContext executionContext)
     {
         executionContext
-            .GetLogger<ILogger<Greeter>>()
+            .GetLogger<ILogger<HttpTriggerExamples>>()
             .LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
     }
 
-    [Function("GreeterByQueryParam")]
-    public IActionResult RunByQueryParam(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithQuery")] HttpRequest req,
+    [Function("HttpTriggerExamplesGetByQueryParam")]
+    public IActionResult RunGetByQueryParam(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "http-trigger-examples/by-query")] HttpRequest req,
         FunctionContext executionContext)
     {
         executionContext
-            .GetLogger<ILogger<Greeter>>()
+            .GetLogger<ILogger<HttpTriggerExamples>>()
             .LogInformation("C# HTTP trigger function processed a request.");
         var id = req.Query["id"];
         return new OkObjectResult($"Welcome to Azure Functions! Id: {id}");
     }
 
-    [Function("GreeterWithInput")]
-    public IActionResult RunWithInput(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "greeter")] HttpRequest req,
-        [FromBody] GreeterInput input, FunctionContext executionContext)
+    [Function("HttpTriggerExamplesPostWithInput")]
+    public IActionResult RunPostWithInput(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "http-trigger-examples")] HttpRequest req,
+        [FromBody] HttpTriggerExampleInput input, FunctionContext executionContext)
     {
         executionContext
-            .GetLogger<ILogger<Greeter>>()
+            .GetLogger<ILogger<HttpTriggerExamples>>()
             .LogInformation("C# HTTP trigger function processed a request with input.");
         return new OkObjectResult($"Welcome to Azure Functions, {input.Name}!");
     }
 
-    [Function("GreeterWithService")]
-    public IActionResult RunWithService(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "greeterWithService")]
+    [Function("HttpTriggerExamplesGetWithService")]
+    public IActionResult RunGetWithService(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "http-trigger-examples/with-service")]
         HttpRequest req, FunctionContext executionContext)
     {
         executionContext
-            .GetLogger<ILogger<Greeter>>()
+            .GetLogger<ILogger<HttpTriggerExamples>>()
             .LogInformation("C# HTTP trigger function processed a request.");
 
         var data = executionContext.InstanceServices
@@ -89,5 +89,5 @@ public class Greeter
         return new OkObjectResult($"Welcome to Azure Functions! Data: {data}");
     }
 
-    public record GreeterInput(string Name);
+    public record HttpTriggerExampleInput(string Name);
 }
