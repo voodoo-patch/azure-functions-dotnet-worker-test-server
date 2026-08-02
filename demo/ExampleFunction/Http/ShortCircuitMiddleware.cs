@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 
-namespace ExampleFunction;
+namespace ExampleFunction.Http;
 
 public class ShortCircuitMiddleware : IFunctionsWorkerMiddleware
 {

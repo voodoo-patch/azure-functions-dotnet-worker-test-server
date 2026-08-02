@@ -1,7 +1,9 @@
+using AzureFunctionsDotNetWorkerTestServer.Tests.TestInfrastructure;
 using ExampleFunction;
+using ExampleFunction.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests;
+namespace AzureFunctionsDotNetWorkerTestServer.Tests.DependencyInjection;
 
 [Trait("Suite", "DependencyInjection")]
 public class ApplicationServiceRegistrationTests(FunctionAppFactory<Program> factory)

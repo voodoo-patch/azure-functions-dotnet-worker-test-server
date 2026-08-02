@@ -2,7 +2,7 @@ using ExampleFunction;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests;
+namespace AzureFunctionsDotNetWorkerTestServer.Tests.Hosting;
 
 [Trait("Suite", "Hosting")]
 public class WorkerHostBootstrapTests(FunctionAppFactory<Program> factory)

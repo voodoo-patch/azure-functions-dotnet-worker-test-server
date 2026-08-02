@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests;
+namespace AzureFunctionsDotNetWorkerTestServer.Tests.Packaging;
 
 [Trait("Suite", "Packaging")]
 public class WorkerPackageCompatibilityTests

@@ -1,6 +1,7 @@
 using ExampleFunction;
+using ExampleFunction.Http;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests;
+namespace AzureFunctionsDotNetWorkerTestServer.Tests.TestInfrastructure;
 
 public class FunctionAppFactoryWithMockServices()
     : FunctionAppFactory<Program>(services => services.ReplaceService<IDummyService, MockDummyService>())

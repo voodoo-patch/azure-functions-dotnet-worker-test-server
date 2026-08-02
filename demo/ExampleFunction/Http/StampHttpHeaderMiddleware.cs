@@ -1,7 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 
-namespace ExampleFunction;
+namespace ExampleFunction.Http;
 
 public class StampHttpHeaderMiddleware : IFunctionsWorkerMiddleware
 {

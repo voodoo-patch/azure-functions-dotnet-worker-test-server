@@ -5,6 +5,15 @@
 exposes its service and middleware registration through `IFunctionAppStartup`, allowing
 `FunctionAppFactory<TProgram>` to host and invoke it in-process.
 
+## Trigger-type organization
+
+Examples are organized by trigger type under this project:
+
+- `Http\Greeter.cs` contains HTTP-triggered functions and input models.
+- `Http\HttpExceptionMiddleware.cs`, `Http\ShortCircuitMiddleware.cs`, and
+  `Http\StampHttpHeaderMiddleware.cs` contain middleware used by HTTP-triggered examples.
+- `Program.cs` remains at the project root and wires host/services/worker middleware.
+
 The companion tests in `test\AzureFunctionsDotNetWorkerTestServer.Tests` demonstrate:
 
 - HTTP GET, constrained-route, query-string, and JSON-body invocation;

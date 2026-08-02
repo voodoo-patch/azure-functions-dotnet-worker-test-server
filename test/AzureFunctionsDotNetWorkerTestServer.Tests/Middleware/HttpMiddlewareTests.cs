@@ -1,8 +1,8 @@
+using System.Net;
 using ExampleFunction;
 using Microsoft.AspNetCore.Http;
-using System.Net;
 
-namespace AzureFunctionsDotNetWorkerTestServer.Tests;
+namespace AzureFunctionsDotNetWorkerTestServer.Tests.Middleware;
 
 [Trait("Suite", "Middleware")]
 public class HttpMiddlewareTests(FunctionAppFactory<Program> factory)
