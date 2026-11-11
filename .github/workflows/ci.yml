@@ -37,7 +37,7 @@ jobs:
         run: dotnet build azure-functions-dotnet-worker-test-server.slnx --configuration Release --no-restore
 
       - name: Test fast suites
-        run: dotnet test test/AzureFunctionsDotNetWorkerTestServer.Tests/AzureFunctionsDotNetWorkerTestServer.Tests.csproj --configuration Release --no-build
+        run: dotnet test test/Worker.TestServer.Tests/Worker.TestServer.Tests.csproj --configuration Release --no-build
 
       - name: Pack
         run: >-

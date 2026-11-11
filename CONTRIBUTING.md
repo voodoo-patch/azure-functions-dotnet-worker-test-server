@@ -22,7 +22,7 @@ preserve that focused scope.
 3. Run the full test suite:
 
    ```powershell
-   dotnet test test\AzureFunctionsDotNetWorkerTestServer.Tests\AzureFunctionsDotNetWorkerTestServer.Tests.csproj --configuration Release --no-build
+   dotnet test test\Worker.TestServer.Tests\Worker.TestServer.Tests.csproj --configuration Release --no-build
    ```
 
 4. When changing a library project, verify its packages:
